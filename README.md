@@ -52,7 +52,7 @@
 ---
 
 - [bitpanda730](#bitpanda730)
-  - [About bitpanda730 📰](#about-bitpanda730-)
+  - [About bitpanda730 🐼](#about-bitpanda730-)
   - [Get started 🏁](#get-started-)
   - [Support the developer ☕](#support-the-developer-)
   - [Powered by 💪](#powered-by-)
@@ -62,7 +62,7 @@
 
 ---
 
-## About bitpanda730 📰
+## About bitpanda730 🐼
 
 > ⚠️This project is intended ONLY for an Italian audience
 
