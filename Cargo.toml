@@ -1,0 +1,30 @@
+[package]
+authors = ["Christian Visintin <christian.visintin1997@gmail.com>"]
+categories = ["command-line-utilities"]
+description = "Ottieni le indicazioni su come compilare il 730 partendo dalle transazioni Bitpanda"
+edition = "2021"
+homepage = "https://github.com/veeso/bitpanda730"
+include = ["src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
+keywords = ["bitpanda", "dichiarazione-redditi", "730", "investimenti"]
+license = "MIT"
+name = "bitpanda730"
+readme = "README.md"
+repository = "https://github.com/veeso/bitpanda730"
+version = "0.1.0"
+
+[[bin]]
+name = "bitpanda730"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "^1.0"
+argh = "^0.1"
+chrono = "^0.4"
+csv = "^1.1"
+log = "^0.4"
+serde = { version = "^1.0", features = [ "derive" ] }
+thiserror = "^1.0"
+
+[dev-dependencies]
+pretty_assertions = "^1.2.1"
+tempfile = "^3.2.0"
