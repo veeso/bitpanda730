@@ -3,8 +3,8 @@
 //! Transaction type definition
 
 /// Defines the `TransactionType` in the bitpanda trade
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
-#[serde(rename_all = "snake_case")]
+#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
 pub enum TransactionType {
     /// Currency deposited to bitpanda
     Deposit,
@@ -17,4 +17,47 @@ pub enum TransactionType {
     /// A withdrawal of a currency (NOTE: can be FIAT or Crypto).
     /// A bitpanda Card transaction is a Withdrawal too.
     Withdrawal,
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    use pretty_assertions::assert_eq;
+    use std::io::Cursor;
+
+    #[test]
+    fn should_decode_transaction_type() {
+        let csv = r#"id,transaction_type
+0,deposit
+1,buy
+2,transfer
+3,sell
+4,withdrawal
+"#;
+        let buffer = Cursor::new(csv);
+        let mut reader = csv::Reader::from_reader(buffer);
+        let mut fakes: Vec<TransactionType> = Vec::new();
+        for result in reader.deserialize::<Fake>() {
+            fakes.push(result.expect("failed to decode").transaction_type);
+        }
+        assert_eq!(
+            fakes,
+            vec![
+                TransactionType::Deposit,
+                TransactionType::Buy,
+                TransactionType::Transfer,
+                TransactionType::Sell,
+                TransactionType::Withdrawal,
+            ]
+        );
+    }
+
+    #[derive(Deserialize)]
+    #[allow(dead_code)]
+    struct Fake {
+        id: u64,
+        transaction_type: TransactionType,
+    }
 }
