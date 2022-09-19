@@ -16,3 +16,10 @@ impl From<Vec<Trade>> for TradeDatabase {
         Self { trades }
     }
 }
+
+impl TradeDatabase {
+    /// Get database items count
+    pub fn len(&self) -> usize {
+        self.trades.len()
+    }
+}

@@ -1,0 +1,19 @@
+"Disclaimer: All data is without guarantee, errors and changes are reserved."
+"Omar Gabberone, 1998-11-02"
+omarthegabber@gmail.com
+"Account opened at: 3/1/22, 4:46 PM"
+"Venue: Bitpanda"
+"Reported by Bitpanda GmbH"
+"Transaction ID",Timestamp,"Transaction Type",In/Out,"Amount Fiat",Fiat,"Amount Asset",Asset,"Asset market price","Asset market price currency","Asset class","Product ID",Fee,"Fee asset",Spread,"Spread Currency"
+F48a0adaa-824f-4753-8e2e-***********,2022-07-02T08:53:13+02:00,deposit,incoming,1000.00,EUR,-,EUR,-,-,Fiat,-,17.69000000,EUR,-,-
+T02f7a7ce-9c38-4b18-9306-***********,2022-07-02T09:09:41+02:00,buy,outgoing,150.00,EUR,1.42307692,AMZN,105.41,EUR,"Stock (derivative)",73,-,-,0.15000000,EUR
+T8123f94c-2580-4129-ae62-***********,2022-07-02T09:19:36+02:00,buy,outgoing,250.00,EUR,0.01329013,BTC,18810.95,EUR,Cryptocurrency,1,-,-,-,-
+2cbcc5dd-67c1-4ded-8020-6***********,2022-07-02T09:23:35+02:00,transfer,incoming,0.00,EUR,0.00869699,BEST,0.34,EUR,Cryptocurrency,33,-,-,-,-
+F9d880b45-e2bf-4a72-b39a-***********,2022-07-02T09:33:29+02:00,deposit,incoming,500.00,EUR,-,EUR,-,-,Fiat,-,8.85000000,EUR,-,-
+F04ce50ab-80e9-4bde-bc74-***********,2022-07-04T11:34:39+02:00,deposit,incoming,500.00,EUR,-,EUR,-,-,Fiat,-,8.85000000,EUR,-,-
+F9b623f2d-4432-445b-90a7-***********,2022-07-28T19:27:49+02:00,deposit,incoming,1527.00,EUR,-,EUR,-,-,Fiat,-,27.00000000,EUR,-,-
+C04e9125e-9688-4fbb-b23b-***********,2022-08-04T15:16:04+02:00,withdrawal,outgoing,0,EUR,0.34905088,ETH,0.00,-,Cryptocurrency,5,0.00100136,ETH,-,-
+Cd0386774-b60a-4f60-bc1e-***********,2022-08-04T15:17:46+02:00,withdrawal,outgoing,0,EUR,0.05039663,BTC,0.00,-,Cryptocurrency,1,0.00006000,BTC,-,-
+T2fdbfca0-fc44-4032-941e-***********,2022-08-05T14:35:07+02:00,sell,incoming,129.17,EUR,15.00000000,FTSE100,8.61,EUR,"ETF (derivative)",115,-,-,0.33000000,EUR
+F93590637-4ca5-4edf-af9f-***********,2022-08-13T10:28:48+02:00,withdrawal,outgoing,20.00,EUR,-,EUR,-,-,Fiat,-,0.00000000,EUR,-,-
+F542dc58a-c88e-45d5-9f00-***********,2022-08-24T01:32:08+02:00,withdrawal,outgoing,1197.70,EUR,-,EUR,-,-,Fiat,-,0.00000000,EUR,-,-
