@@ -3,7 +3,7 @@
 //! Transaction type definition
 
 /// Defines the `TransactionType` in the bitpanda trade
-#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
 #[serde(rename_all = "lowercase")]
 pub enum TransactionType {
     /// Currency deposited to bitpanda

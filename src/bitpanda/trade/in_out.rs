@@ -3,7 +3,7 @@
 //! The direction of a transaction
 
 /// Defines the direction of a trade on bitpanda
-#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
 #[serde(rename_all = "lowercase")]
 pub enum InOut {
     Incoming,

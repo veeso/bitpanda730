@@ -5,7 +5,7 @@
 use super::Currency;
 
 /// Defines the asset name. The asset can be a currency or an asset name (stock code)
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Hash)]
 #[serde(untagged)]
 pub enum Asset {
     Currency(Currency),

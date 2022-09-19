@@ -3,7 +3,7 @@
 //! This module defines the CsvOption type
 
 /// A CSV option
-#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
 #[serde(untagged)]
 pub enum CsvOption<T> {
     Some(T),
@@ -11,7 +11,7 @@ pub enum CsvOption<T> {
 }
 
 /// A dummy value to allow deserialization of `-`
-#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum NoneValue {
     #[serde(rename = "-")]
     Null,
@@ -35,6 +35,10 @@ impl<T> CsvOption<T> {
     /// Convert `CsvOption<T>` into a std `Option<T>`
     pub fn option(self) -> Option<T> {
         self.into()
+    }
+
+    pub fn none() -> Self {
+        Self::None(NoneValue::Null)
     }
 }
 

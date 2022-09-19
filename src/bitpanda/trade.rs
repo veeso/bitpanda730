@@ -22,7 +22,7 @@ pub use option::CsvOption;
 pub use transaction_type::TransactionType;
 
 /// Defines a single `Trade` made on Bitpanda exchange
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub struct Trade {
     /// Identity uniquely a transaction on bitpanda
     #[serde(rename = "Transaction ID")]
@@ -137,6 +137,30 @@ impl Trade {
 
     pub fn spread_currency(&self) -> Option<Fiat> {
         self.spread_currency.into()
+    }
+}
+
+#[cfg(test)]
+impl From<crate::mock::bitpanda::TradeBuilder> for Trade {
+    fn from(builder: crate::mock::bitpanda::TradeBuilder) -> Self {
+        Self {
+            transaction_id: builder.transaction_id,
+            timestamp: builder.timestamp,
+            transaction_type: builder.transaction_type,
+            in_out: builder.in_out,
+            amount_fiat: builder.amount_fiat,
+            fiat: builder.fiat,
+            amount_asset: builder.amount_asset,
+            asset: builder.asset,
+            asset_market_price: builder.asset_market_price,
+            asset_market_price_currency: builder.asset_market_price_currency,
+            asset_class: builder.asset_class,
+            product_id: builder.product_id,
+            fee: builder.fee,
+            fee_asset: builder.fee_asset,
+            spread: builder.spread,
+            spread_currency: builder.spread_currency,
+        }
     }
 }
 

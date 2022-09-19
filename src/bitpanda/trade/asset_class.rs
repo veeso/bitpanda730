@@ -3,7 +3,7 @@
 //! asset class types
 
 /// Defines the asset class type, which is the asset group on Bitanda
-#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum AssetClass {
     Fiat,
     #[serde(rename = "Stock (derivative)")]

@@ -5,7 +5,7 @@
 use super::Fiat;
 
 /// Defines the currency on Bitanda
-#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
 #[serde(rename_all = "UPPERCASE", untagged)]
 pub enum Currency {
     /// A fiat is a kind of currency
@@ -14,7 +14,7 @@ pub enum Currency {
 }
 
 /// Defines the list of crypto currencies accepted for deposit/withdrawal on bitpanda
-#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum CryptoCurrency {
     Btc,

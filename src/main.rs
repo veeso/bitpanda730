@@ -14,6 +14,9 @@ mod bitpanda;
 mod database;
 mod parser;
 
+#[cfg(test)]
+mod mock;
+
 use app::App;
 use args::Args;
 
