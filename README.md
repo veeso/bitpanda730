@@ -86,7 +86,7 @@ TODO:
 Lancia bitpanda730 fornendo come argomenti l'intervallo temporale da cui vuoi prendere le transazioni (presumibilmente l'anno per cui stai compilando il 730) ed il file CSV.
 
 ```sh
-bitpanda730 --since 2022-01-01T00:00:00+01:00 --to 2022-12-31T23:59:59+01:00 ~/bitpanda-trades-2023-05-12-15-26.csv
+bitpanda730 --year 2022 ~/bitpanda-trades-2023-05-12-15-26.csv
 ```
 
 ---

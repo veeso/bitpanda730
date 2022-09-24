@@ -170,7 +170,6 @@ mod test {
     use super::*;
 
     use pretty_assertions::assert_eq;
-    use rust_decimal_macros::dec;
     use std::io::Cursor;
 
     #[test]

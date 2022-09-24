@@ -1,6 +1,5 @@
 use chrono::{DateTime, FixedOffset};
 use rust_decimal::Decimal;
-use rust_decimal_macros::dec;
 
 use crate::bitpanda::{
     trade::{Asset, AssetClass, CsvOption, Currency, Fiat, InOut, TransactionType},
@@ -40,6 +39,7 @@ impl TradeGenerator {
         timestamp: DateTime<FixedOffset>,
         amount: Decimal,
         fiat: Fiat,
+        amount_asset: Decimal,
         asset: Asset,
         asset_class: AssetClass,
         asset_market_price: Decimal,
@@ -50,6 +50,7 @@ impl TradeGenerator {
             .fiat(fiat)
             .in_out(InOut::Outgoing)
             .transaction_type(TransactionType::Buy)
+            .amount_asset(amount_asset)
             .asset(asset)
             .asset_class(asset_class)
             .asset_market_price(asset_market_price)
@@ -60,6 +61,7 @@ impl TradeGenerator {
         timestamp: DateTime<FixedOffset>,
         amount: Decimal,
         fiat: Fiat,
+        amount_asset: Decimal,
         asset: Asset,
         asset_class: AssetClass,
         asset_market_price: Decimal,
@@ -70,6 +72,7 @@ impl TradeGenerator {
             .fiat(fiat)
             .in_out(InOut::Incoming)
             .transaction_type(TransactionType::Sell)
+            .amount_asset(amount_asset)
             .asset(asset)
             .asset_class(asset_class)
             .asset_market_price(asset_market_price)
@@ -153,6 +156,11 @@ impl TradeBuilder {
 
     pub fn fee_asset(mut self, currency: Currency) -> Self {
         self.fee_asset = CsvOption::Some(currency);
+        self
+    }
+
+    pub fn amount_asset(mut self, amount: Decimal) -> Self {
+        self.amount_asset = CsvOption::Some(amount);
         self
     }
 

@@ -3,7 +3,6 @@
 //! CLI arguments
 
 use argh::FromArgs;
-use chrono::{DateTime, FixedOffset};
 
 use std::path::PathBuf;
 
@@ -13,10 +12,8 @@ use std::path::PathBuf;
 Please, consider supporting the author <https://ko-fi.com/veeso>"
 )]
 pub struct Args {
-    #[argh(option, description = "set start date range")]
-    pub since: DateTime<FixedOffset>,
-    #[argh(option, description = "set end date range")]
-    pub to: DateTime<FixedOffset>,
+    #[argh(option, description = "the year to calculate the taxes for")]
+    pub year: i32,
     #[argh(switch, short = 'D', description = "enable TRACE log level")]
     pub debug: bool,
     #[argh(switch, short = 'v', description = "verbose mode")]

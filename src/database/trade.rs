@@ -3,7 +3,7 @@
 //! This module defines the trade database
 
 use crate::bitpanda::{
-    trade::{Asset, InOut},
+    trade::{Asset, InOut, TransactionType},
     Trade,
 };
 
@@ -42,17 +42,18 @@ impl TradeDatabase {
         grouped
     }
 
-    /// Get current balance in the bitpanda wallet
-    pub fn balance(&self) -> Decimal {
+    /// Get current FIAT balance in the bitpanda wallet
+    pub fn fiat_balance(&self) -> Decimal {
         let mut balance = Decimal::ZERO;
+        todo!("something must be excluded here in the calc (some transfers are glitched?)")
         balance += self
-            .trades()
+            .trades
             .iter()
             .filter(|t| t.in_out() == InOut::Incoming)
             .map(|t| t.amount_fiat() - t.fee().unwrap_or_default()) // NOTE: for incoming operations fee must be subtracted, since is kept by Bitpanda
             .sum::<Decimal>();
         balance -= self
-            .trades()
+            .trades
             .iter()
             .filter(|t| t.in_out() == InOut::Outgoing)
             .map(|t| t.amount_fiat())
@@ -68,7 +69,6 @@ mod test {
     use crate::mock::database::DatabaseTradeMock;
 
     use pretty_assertions::assert_eq;
-    use rust_decimal_macros::dec;
 
     #[test]
     fn should_get_trades() {
@@ -93,6 +93,6 @@ mod test {
     #[test]
     fn should_calc_balance() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.balance(), dec!(1803.52));
+        assert_eq!(db.fiat_balance(), dec!(9219.90));
     }
 }

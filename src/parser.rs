@@ -23,7 +23,8 @@ impl BitpandaTradeParser {
         debug!("tempfile opened");
         let mut reader = csv::Reader::from_reader(file);
         let mut trades: Vec<Trade> = Vec::new();
-        for trade in reader.deserialize::<Trade>().flatten() {
+        for trade in reader.deserialize::<Trade>() {
+            let trade = trade?;
             trace!("found trade {:?}", trade);
             trades.push(trade);
         }
@@ -42,7 +43,8 @@ impl BitpandaTradeParser {
         debug!("tempfile opened at {}", work_file.path().display());
         // iter reader lines
         let mut keep = false;
-        for line in BufReader::new(reader).lines().flatten() {
+        for line in BufReader::new(reader).lines() {
+            let line = line?;
             if line == BITPANDA_CSV_COL_HEADER {
                 debug!("found column header");
                 keep = true;

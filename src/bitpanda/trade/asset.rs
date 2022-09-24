@@ -10,6 +10,7 @@ use super::Currency;
 pub enum Asset {
     Currency(Currency),
     Name(String),
+    Number(i64),
 }
 
 #[cfg(test)]
@@ -28,6 +29,7 @@ mod test {
 1,BTC
 2,TSLA
 3,Gold
+4,1177
 "#;
         let buffer = Cursor::new(csv);
         let mut reader = csv::Reader::from_reader(buffer);
@@ -42,6 +44,7 @@ mod test {
                 Asset::Currency(Currency::Crypto(CryptoCurrency::Btc)),
                 Asset::Name("TSLA".to_string()),
                 Asset::Name("Gold".to_string()),
+                Asset::Number(1177),
             ]
         );
     }
