@@ -13,6 +13,7 @@ mod args;
 mod bitpanda;
 mod database;
 mod parser;
+mod tax;
 
 #[cfg(test)]
 mod mock;

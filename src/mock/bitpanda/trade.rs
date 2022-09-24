@@ -3,7 +3,7 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 
 use crate::bitpanda::{
-    trade::{Asset, AssetClass, CryptoCurrency, CsvOption, Currency, Fiat, InOut, TransactionType},
+    trade::{Asset, AssetClass, CsvOption, Currency, Fiat, InOut, TransactionType},
     Trade,
 };
 
@@ -12,14 +12,15 @@ pub struct TradeGenerator;
 impl TradeGenerator {
     pub fn deposit(timestamp: DateTime<FixedOffset>, amount: Decimal, fiat: Fiat) -> Trade {
         // fee is 1.8%
-        let fee = (amount * dec!(1.8)) / dec!(100.0);
+        let fee = amount - (amount * dec!(100.0)) / dec!(101.8);
         TradeBuilder::default()
             .timestamp(timestamp)
             .amount_fiat(amount)
             .fiat(fiat)
             .in_out(InOut::Incoming)
             .transaction_type(TransactionType::Deposit)
-            .fee(fee)
+            .asset(Asset::Currency(Currency::Fiat(fiat)))
+            .fee(fee.round_dp(2))
             .fee_asset(Currency::Fiat(fiat))
             .into()
     }
@@ -31,6 +32,47 @@ impl TradeGenerator {
             .fiat(fiat)
             .in_out(InOut::Outgoing)
             .transaction_type(TransactionType::Withdrawal)
+            .asset(Asset::Currency(Currency::Fiat(fiat)))
+            .into()
+    }
+
+    pub fn buy(
+        timestamp: DateTime<FixedOffset>,
+        amount: Decimal,
+        fiat: Fiat,
+        asset: Asset,
+        asset_class: AssetClass,
+        asset_market_price: Decimal,
+    ) -> Trade {
+        TradeBuilder::default()
+            .timestamp(timestamp)
+            .amount_fiat(amount)
+            .fiat(fiat)
+            .in_out(InOut::Outgoing)
+            .transaction_type(TransactionType::Buy)
+            .asset(asset)
+            .asset_class(asset_class)
+            .asset_market_price(asset_market_price)
+            .into()
+    }
+
+    pub fn sell(
+        timestamp: DateTime<FixedOffset>,
+        amount: Decimal,
+        fiat: Fiat,
+        asset: Asset,
+        asset_class: AssetClass,
+        asset_market_price: Decimal,
+    ) -> Trade {
+        TradeBuilder::default()
+            .timestamp(timestamp)
+            .amount_fiat(amount)
+            .fiat(fiat)
+            .in_out(InOut::Incoming)
+            .transaction_type(TransactionType::Sell)
+            .asset(asset)
+            .asset_class(asset_class)
+            .asset_market_price(asset_market_price)
             .into()
     }
 }
@@ -111,6 +153,21 @@ impl TradeBuilder {
 
     pub fn fee_asset(mut self, currency: Currency) -> Self {
         self.fee_asset = CsvOption::Some(currency);
+        self
+    }
+
+    pub fn asset(mut self, asset: Asset) -> Self {
+        self.asset = asset;
+        self
+    }
+
+    pub fn asset_class(mut self, class: AssetClass) -> Self {
+        self.asset_class = class;
+        self
+    }
+
+    pub fn asset_market_price(mut self, asset_market_price: Decimal) -> Self {
+        self.asset_market_price = CsvOption::Some(asset_market_price);
         self
     }
 }

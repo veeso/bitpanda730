@@ -2,7 +2,9 @@
 //!
 //! This module exposes the main application workflow
 
-use crate::{args::Args, bitpanda::Trade, database::TradeDatabase, parser::BitpandaTradeParser};
+use crate::{
+    args::Args, bitpanda::Trade, database::TradeDatabase, parser::BitpandaTradeParser, tax::Taxes,
+};
 
 use std::convert::TryFrom;
 
@@ -33,6 +35,9 @@ impl TryFrom<Args> for App {
 impl App {
     /// Run application
     pub fn run(mut self) -> anyhow::Result<()> {
+        debug!("taxes setup");
+        let taxes = Taxes::from(&self.trades);
+        debug!("calculating taxes on balance");
         todo!()
     }
 }
@@ -58,6 +63,6 @@ mod test {
             version: false,
         };
         let app = App::try_from(args).unwrap();
-        assert_eq!(app.trades.len(), 4);
+        assert_eq!(app.trades.trades().len(), 4);
     }
 }
