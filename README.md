@@ -54,9 +54,11 @@
 - [bitpanda730](#bitpanda730)
   - [About bitpanda730 🐼](#about-bitpanda730-)
   - [Get started 🏁](#get-started-)
-  - [Support the developer ☕](#support-the-developer-)
+    - [Installazione](#installazione)
+    - [Calcolo tasse](#calcolo-tasse)
+  - [Supporta lo sviluppatore ☕](#supporta-lo-sviluppatore-)
   - [Powered by 💪](#powered-by-)
-  - [Contributing and issues 🤝🏻](#contributing-and-issues-)
+  - [Contributi 🤝🏻](#contributi-)
   - [Changelog ⏳](#changelog-)
   - [License 📃](#license-)
 
@@ -77,11 +79,19 @@ TODO:
 
 ## Get started 🏁
 
-TODO:
+### Installazione
+
+### Calcolo tasse
+
+Lancia bitpanda730 fornendo come argomenti l'intervallo temporale da cui vuoi prendere le transazioni (presumibilmente l'anno per cui stai compilando il 730) ed il file CSV.
+
+```sh
+bitpanda730 --since 2022-01-01T00:00:00+01:00 --to 2022-12-31T23:59:59+01:00 ~/bitpanda-trades-2023-05-12-15-26.csv
+```
 
 ---
 
-## Support the developer ☕
+## Supporta lo sviluppatore ☕
 
 Se ti piace bitpanda730 e vuoi darmi un piccolo aiuto per quello che faccio, puoi fare una donazione tramite queste piattaforme 🥳
 
@@ -98,7 +108,7 @@ Se ti piace bitpanda730 e vuoi darmi un piccolo aiuto per quello che faccio, puo
 
 ---
 
-## Contributing and issues 🤝🏻
+## Contributi 🤝🏻
 
 Se vuoi contribuire al progetto, non esitare ad aprire una PR o un issue.
 
