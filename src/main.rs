@@ -14,6 +14,7 @@ mod app;
 mod args;
 mod bitpanda;
 mod database;
+mod finance;
 mod parser;
 mod tax;
 

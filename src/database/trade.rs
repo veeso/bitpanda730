@@ -45,7 +45,7 @@ impl TradeDatabase {
     /// Get current FIAT balance in the bitpanda wallet
     pub fn fiat_balance(&self) -> Decimal {
         let mut balance = Decimal::ZERO;
-        todo!("something must be excluded here in the calc (some transfers are glitched?)")
+        todo!("something must be excluded here in the calc (some transfers are glitched?)");
         balance += self
             .trades
             .iter()
