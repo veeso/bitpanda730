@@ -8,7 +8,7 @@ use crate::bitpanda::{
 };
 
 use rust_decimal::Decimal;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// The trade database contains all the trades parsed from the CSV
 /// and exposes methods to query the trade datas
@@ -42,6 +42,16 @@ impl TradeDatabase {
         grouped
     }
 
+    /// Collect assets from database (unique)
+    pub fn collect_assets(&self) -> Vec<Asset> {
+        self.trades
+            .iter()
+            .map(|x| x.asset())
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect()
+    }
+
     /// Get current FIAT balance in the bitpanda wallet
     pub fn fiat_balance(&self) -> Decimal {
         let mut balance = Decimal::ZERO;
@@ -66,6 +76,7 @@ impl TradeDatabase {
 mod test {
 
     use super::*;
+    use crate::bitpanda::trade::{CryptoCurrency, Currency, Fiat};
     use crate::mock::database::DatabaseTradeMock;
 
     use pretty_assertions::assert_eq;
@@ -73,14 +84,14 @@ mod test {
     #[test]
     fn should_get_trades() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.trades().len(), 9);
+        assert_eq!(db.trades().len(), 10);
     }
 
     #[test]
     fn should_group_by_asset() {
         let db = DatabaseTradeMock::mock();
         let groups = db.group_by_asset();
-        assert_eq!(groups.len(), 5);
+        assert_eq!(groups.len(), 6);
         assert_eq!(
             groups
                 .get(&Asset::Name(String::from("AMZN")))
@@ -88,6 +99,12 @@ mod test {
                 .len(),
             2
         );
+    }
+
+    #[test]
+    fn should_collect_assets() {
+        let db = DatabaseTradeMock::mock();
+        assert_eq!(db.collect_assets().len(), 6)
     }
 
     #[test]

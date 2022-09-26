@@ -51,6 +51,15 @@ impl DatabaseTradeMock {
                 AssetClass::Cryptocurrency,
                 dec!(18456.54),
             ),
+            TradeGenerator::buy(
+                DateTime::from_str("2022-07-05T12:32:24Z").unwrap(),
+                dec!(51.93),
+                Fiat::Eur,
+                dec!(80.0),
+                Asset::Number(1177),
+                AssetClass::Stock,
+                dec!(0.65),
+            ),
             TradeGenerator::sell(
                 DateTime::from_str("2022-08-13T16:32:24Z").unwrap(),
                 dec!(645.47),
