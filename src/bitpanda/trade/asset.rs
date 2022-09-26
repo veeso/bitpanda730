@@ -10,7 +10,7 @@ use super::Currency;
 pub enum Asset {
     Currency(Currency),
     Name(String),
-    Number(i64),
+    HongKong(i64),
 }
 
 #[cfg(test)]
@@ -44,7 +44,7 @@ mod test {
                 Asset::Currency(Currency::Crypto(CryptoCurrency::Btc)),
                 Asset::Name("TSLA".to_string()),
                 Asset::Name("Gold".to_string()),
-                Asset::Number(1177),
+                Asset::HongKong(1177),
             ]
         );
     }

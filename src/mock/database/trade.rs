@@ -56,7 +56,7 @@ impl DatabaseTradeMock {
                 dec!(51.93),
                 Fiat::Eur,
                 dec!(80.0),
-                Asset::Number(1177),
+                Asset::HongKong(1177),
                 AssetClass::Stock,
                 dec!(0.65),
             ),

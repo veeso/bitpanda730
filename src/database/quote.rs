@@ -65,3 +65,35 @@ impl QuoteDatabase {
         Ok(price)
     }
 }
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+    use crate::mock::database::DatabaseTradeMock;
+
+    use chrono::prelude::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn should_load_quote_database() {
+        let trades = DatabaseTradeMock::mock();
+        assert!(QuoteDatabase::load(&trades, date(2021, 1, 1), date(2021, 12, 31)).is_ok());
+    }
+
+    #[test]
+    fn should_get_price() {
+        let mut quotes = HashMap::new();
+        quotes.insert(Asset::Name(String::from("AMZN")), dec!(124.08));
+        let db = QuoteDatabase { quotes };
+        assert_eq!(
+            db.price(Asset::Name(String::from("AMZN"))).unwrap(),
+            dec!(124.08)
+        );
+        assert!(db.price(Asset::Name(String::from("ADBE"))).is_none());
+    }
+
+    fn date(year: i32, month: u32, day: u32) -> DateTime<Utc> {
+        Utc.from_utc_datetime(&NaiveDate::from_ymd(year, month, day).and_hms(12, 0, 0))
+    }
+}

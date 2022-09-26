@@ -43,7 +43,13 @@ impl Quotes {
             .filter(|x| x.date <= date)
             .last()
             .map(|x| x.price)
-            .unwrap_or_default()
+            .unwrap_or_else(|| {
+                self.quotes
+                    .iter()
+                    .map(|x| x.price)
+                    .next()
+                    .expect("quotes are empty")
+            })
     }
 
     /// Convert quotes prices to EUR from USD
@@ -77,7 +83,7 @@ impl Quote {
             "applying USD to EUR conversion; 1$ = {}€ at {}",
             eur_change, self.date
         );
-        self.price = (self.price / eur_change).round_dp(2);
+        self.price = self.price / eur_change;
         // set currency to eur
         self.currency = Currency::Eur;
         Ok(())
@@ -105,7 +111,7 @@ mod test {
         let date = Utc.from_utc_datetime(&NaiveDate::from_ymd(2022, 9, 23).and_hms(12, 0, 0));
         let mut quote = Quote::usd(date, dec!(120.32));
         assert!(quote.usd_to_eur(&usd_to_eur_table()).is_ok());
-        assert_eq!(quote.price, dec!(122.78));
+        assert_eq!(quote.price.round_dp(2), dec!(122.78));
         assert_eq!(quote.currency, Currency::Eur);
     }
 
@@ -116,7 +122,7 @@ mod test {
         assert!(quote.usd_to_eur(&usd_to_eur_table()).is_ok());
         // error on second conversion
         assert!(quote.usd_to_eur(&usd_to_eur_table()).is_err());
-        assert_eq!(quote.price, dec!(122.78));
+        assert_eq!(quote.price.round_dp(2), dec!(122.78));
         assert_eq!(quote.currency, Currency::Eur);
     }
 

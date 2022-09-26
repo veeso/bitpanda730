@@ -46,12 +46,7 @@ impl Exchange {
         Ok(data
             .into_iter()
             .filter(|x| x.timestamp >= from && x.timestamp <= to)
-            .map(|x| {
-                Quote::usd(
-                    x.timestamp,
-                    Decimal::from_f64(x.close).unwrap_or_default().round_dp(2),
-                )
-            })
+            .map(|x| Quote::usd(x.timestamp, Decimal::from_f64(x.close).unwrap_or_default()))
             .collect::<Vec<Quote>>()
             .into())
     }
@@ -71,7 +66,10 @@ mod test {
         let exchange = Exchange::new(from, to).unwrap();
         let september23 =
             Utc.from_utc_datetime(&NaiveDate::from_ymd(2021, 9, 23).and_hms(23, 59, 59));
-        assert_eq!(exchange.eur_usd.price_at(september23), dec!(1.17));
+        assert_eq!(
+            exchange.eur_usd.price_at(september23).round_dp(2),
+            dec!(1.17)
+        );
     }
 
     #[test]
@@ -84,6 +82,6 @@ mod test {
         let september23 =
             Utc.from_utc_datetime(&NaiveDate::from_ymd(2022, 9, 23).and_hms(23, 59, 59));
         // 113.78 $ =>
-        assert_eq!(quotes.price_at(september23), dec!(116.10));
+        assert_eq!(quotes.price_at(september23).round_dp(2), dec!(115.61));
     }
 }
