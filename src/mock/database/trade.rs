@@ -9,6 +9,7 @@ pub struct DatabaseTradeMock;
 
 impl DatabaseTradeMock {
     pub fn mock() -> TradeDatabase {
+        todo!("change to 2021");
         TradeDatabase::from(vec![
             TradeGenerator::deposit(
                 DateTime::from_str("2022-01-06T12:32:24Z").unwrap(),
