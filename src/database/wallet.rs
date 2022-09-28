@@ -35,6 +35,7 @@ impl WalletDatabase {
 
     /// Get the amount of assets detained from these trades
     fn count(trades: &[&Trade]) -> Decimal {
+        todo!("failed; check buy sell");
         let mut amount = Decimal::ZERO;
         amount += trades
             .iter()
@@ -48,5 +49,31 @@ impl WalletDatabase {
             .sum::<Decimal>();
         debug!("found {} assets", amount);
         amount
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+    use crate::mock::database::DatabaseTradeMock;
+
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn should_load_wallet_database() {
+        let trades = DatabaseTradeMock::mock();
+        let db = WalletDatabase::load(&trades);
+        assert_eq!(db.assets.len(), 6);
+    }
+
+    #[test]
+    fn should_get_asset_balance() {
+        let trades = DatabaseTradeMock::mock();
+        let db = WalletDatabase::load(&trades);
+        assert_eq!(
+            db.balance(&Asset::Name(String::from("AMZN"))).unwrap(),
+            dec!(1.0)
+        );
     }
 }
