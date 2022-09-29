@@ -2,7 +2,7 @@
 //!
 //! This module provides the currency type on bitpanda
 
-use super::Fiat;
+use super::{CryptoCurrency, Fiat};
 
 /// Defines the currency on Bitanda
 #[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
@@ -13,72 +13,16 @@ pub enum Currency {
     Crypto(CryptoCurrency),
 }
 
-/// Defines the list of crypto currencies accepted for deposit/withdrawal on bitpanda
-#[derive(Debug, Deserialize, Copy, Clone, Eq, PartialEq, Hash)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum CryptoCurrency {
-    Aave,
-    Ada,
-    Ant,
-    Ape,
-    Atom,
-    Avax,
-    Axs,
-    Band,
-    Bat,
-    Bch,
-    Best,
-    Btc,
-    Chz,
-    Comp,
-    Crv,
-    Dash,
-    Doge,
-    Dot,
-    Enj,
-    Eos,
-    Eth,
-    Euroc,
-    Gala,
-    Grt,
-    Kmd,
-    Knc,
-    Link,
-    Lrc,
-    Lsk,
-    Ltc,
-    Mana,
-    Miota,
-    Mkr,
-    Neo,
-    Ocean,
-    Omg,
-    #[serde(rename = "1INCH")]
-    OneInch,
-    Ont,
-    Pan,
-    Ren,
-    Rep,
-    Rsr,
-    Sand,
-    Shib,
-    Snx,
-    Sol,
-    Srm,
-    Sushi,
-    Uma,
-    Uni,
-    Usdc,
-    Usdt,
-    Vet,
-    Waves,
-    Xem,
-    Xlm,
-    Xrp,
-    Xtz,
-    Yfi,
-    Zec,
-    Zrx,
+impl Currency {
+    /// Returns whether the currency is FIAT
+    pub fn is_fiat(&self) -> bool {
+        matches!(self, Currency::Fiat(_))
+    }
+
+    /// Returns whether the currency is a crypto
+    pub fn is_crypto(&self) -> bool {
+        matches!(self, Currency::Crypto(_))
+    }
 }
 
 #[cfg(test)]
@@ -88,6 +32,18 @@ mod test {
 
     use pretty_assertions::assert_eq;
     use std::io::Cursor;
+
+    #[test]
+    fn should_tell_whether_is_fiat() {
+        assert_eq!(Currency::Fiat(Fiat::Eur).is_fiat(), true);
+        assert_eq!(Currency::Crypto(CryptoCurrency::Best).is_fiat(), false);
+    }
+
+    #[test]
+    fn should_tell_whether_is_crypto() {
+        assert_eq!(Currency::Fiat(Fiat::Eur).is_crypto(), false);
+        assert_eq!(Currency::Crypto(CryptoCurrency::Best).is_crypto(), true);
+    }
 
     #[test]
     fn should_decode_currency() {

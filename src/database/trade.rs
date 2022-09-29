@@ -3,7 +3,7 @@
 //! This module defines the trade database
 
 use crate::bitpanda::{
-    trade::{Asset, InOut, TransactionType},
+    trade::{Asset, AssetClass, Currency, InOut, TransactionType},
     Trade,
 };
 
@@ -54,21 +54,46 @@ impl TradeDatabase {
 
     /// Get current FIAT balance in the bitpanda wallet
     pub fn fiat_balance(&self) -> Decimal {
-        let mut balance = Decimal::ZERO;
-        todo!("something must be excluded here in the calc (some transfers are glitched?)");
-        balance += self
+        let incoming_fiat = self
             .trades
             .iter()
-            .filter(|t| t.in_out() == InOut::Incoming)
+            .filter(|t| Self::is_fiat_incoming(t))
             .map(|t| t.amount_fiat() - t.fee().unwrap_or_default()) // NOTE: for incoming operations fee must be subtracted, since is kept by Bitpanda
             .sum::<Decimal>();
-        balance -= self
+        debug!("total incoming fiat amount: {}", incoming_fiat);
+        let outgoing_fiat = self
             .trades
             .iter()
-            .filter(|t| t.in_out() == InOut::Outgoing)
+            .filter(|t| Self::is_fiat_outgoing(t))
             .map(|t| t.amount_fiat())
             .sum::<Decimal>();
-        balance
+        debug!("total outgoing fiat amount: {}", outgoing_fiat);
+        (incoming_fiat - outgoing_fiat).round_dp(2)
+    }
+
+    /// Returns whether trade is FIAT incoming
+    fn is_fiat_incoming(trade: &Trade) -> bool {
+        if trade.transaction_type() == TransactionType::Transfer
+            && (trade.asset_class() == AssetClass::Stock
+                || matches!(trade.asset(), Asset::Currency(Currency::Crypto(_))))
+        {
+            // NOTE: is stock split or staking
+            false
+        } else {
+            trade.in_out() == InOut::Incoming
+        }
+    }
+
+    /// Returns whether trade is FIAT outgoing
+    fn is_fiat_outgoing(trade: &Trade) -> bool {
+        if trade.transaction_type() == TransactionType::Transfer
+            && matches!(trade.asset(), Asset::Currency(Currency::Crypto(_)))
+        {
+            // NOTE: is staking
+            false
+        } else {
+            trade.in_out() == InOut::Outgoing
+        }
     }
 }
 
@@ -109,6 +134,6 @@ mod test {
     #[test]
     fn should_calc_balance() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.fiat_balance(), dec!(9219.90));
+        assert_eq!(db.fiat_balance(), dec!(7782.54));
     }
 }

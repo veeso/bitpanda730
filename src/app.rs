@@ -26,10 +26,10 @@ impl TryFrom<Args> for App {
         info!("parsing CSV file {}", args.csv_file.display());
         let trades = BitpandaTradeParser::parse(&args.csv_file)?;
         // calc date range according to Italian timezone
-        let since = FixedOffset::west(3600)
+        let since = FixedOffset::east(3600)
             .ymd(args.year, 1, 1)
             .and_hms(0, 0, 0);
-        let to = FixedOffset::west(3600)
+        let to = FixedOffset::east(3600)
             .ymd(args.year, 12, 31)
             .and_hms(23, 59, 59);
         info!("working on time range {} => {}", since, to);

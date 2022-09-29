@@ -2,13 +2,17 @@
 
 import csv
 from sys import argv
-from typing import List
+from typing import List, Tuple
 
-USAGE = """Usage: pypanda.py <csv_file> <command> [cmdargs...]
+CMD_GET_COLUMN = "get-column"
+CMD_FILTER = "filter"
+
+USAGE = f"""Usage: pypanda.py <csv_file> <command> [cmdargs...]
 
 Where command can be:
 
-    - get-column <column-name> [unique]: collect CSV columns by name. If unique is provided, only unique values are returned
+    - {CMD_GET_COLUMN} <column-name> [unique]: collect CSV columns by name. If unique is provided, only unique values are returned
+    - {CMD_FILTER} <column-name> <value>...: collect CSV columns which `column-name` has value `value`
 """
 
 
@@ -42,6 +46,9 @@ class Trade(object):
         self.fee_asset = row[13]
         self.spread = row[14]
         self.spread_currency = row[15]
+
+    def __repr__(self) -> str:
+        return f"{self.transaction_id},{self.timestamp},{self.transaction_type},{self.in_out},{self.amount_fiat},{self.fiat},{self.amount_asset},{self.asset},{self.asset_market_price},{self.asset_market_price_currency},{self.asset_class},{self.product_id},{self.fee},{self.fee_asset},{self.spread},{self.spread_currency}"
 
 
 def get_column(csv_data: CsvData, column: str) -> List[str]:
@@ -81,6 +88,47 @@ def get_column(csv_data: CsvData, column: str) -> List[str]:
         raise Exception(f"Unknown column {column}")
 
 
+def get_col_by_name(trade: Trade, column: str) -> str:
+    if column == "transaction_id":
+        return trade.transaction_id
+    elif column == "timestamp":
+        return trade.timestamp
+    elif column == "transaction_type":
+        return trade.transaction_type
+    elif column == "in_out":
+        return trade.in_out
+    elif column == "amount_fiat":
+        return trade.amount_fiat
+    elif column == "fiat":
+        return trade.fiat
+    elif column == "amount_asset":
+        return trade.amount_asset
+    elif column == "asset":
+        return trade.asset
+    elif column == "asset_market_price":
+        return trade.asset_market_price
+    elif column == "asset_market_price_currency":
+        return trade.asset_market_price_currency
+    elif column == "asset_class":
+        return trade.asset_class
+    elif column == "product_id":
+        return trade.product_id
+    elif column == "fee":
+        return trade.fee
+    elif column == "fee_asset":
+        return trade.fee_asset
+    elif column == "spread":
+        return trade.spread
+    elif column == "spread_currency":
+        return trade.spread_currency
+    else:
+        raise Exception(f"Unknown column {column}")
+
+
+def filter_rows(trades: List[Trade], column: str, value: str) -> List[CsvData]:
+    return list(filter(lambda x: get_col_by_name(x, column) == value, trades))
+
+
 def collect_columns(csv_data: CsvData, column: str, unique: bool) -> List[str]:
     cols = get_column(csv_data, column)
     if unique:
@@ -90,6 +138,12 @@ def collect_columns(csv_data: CsvData, column: str, unique: bool) -> List[str]:
 
 def parse_csv(csv_file: str) -> CsvData:
     return CsvData(csv_file)
+
+
+def collect_filter_values(extra_args: List[str]) -> List[Tuple[str, str]]:
+    if len(extra_args) % 2 != 0:
+        raise Exception("missing argument")
+    return list(zip(extra_args[0::2], extra_args[1::2]))
 
 
 def main(args: List[str]) -> int:
@@ -104,12 +158,24 @@ def main(args: List[str]) -> int:
         return 1
     command = args[1]
 
-    if command == "get-column" and len(args) > 2:
+    if command == CMD_GET_COLUMN and len(args) > 2:
         try:
             unique = len(args) == 4
             cols = collect_columns(csv_data, args[2], unique)
             for col in cols:
                 print(col)
+        except Exception as e:
+            print(e)
+            return 1
+    elif command == CMD_FILTER and len(args) > 3:
+        try:
+            filters = collect_filter_values(args[2:])
+            trades = csv_data.trades
+            for (column, value) in filters:
+
+                trades = filter_rows(trades, column, value)
+            for trade in trades:
+                print(trade)
         except Exception as e:
             print(e)
             return 1

@@ -7,6 +7,7 @@ use rust_decimal::Decimal;
 
 mod asset;
 mod asset_class;
+mod crypto;
 mod currency;
 mod fiat;
 mod in_out;
@@ -15,7 +16,8 @@ mod transaction_type;
 
 pub use asset::Asset;
 pub use asset_class::AssetClass;
-pub use currency::{CryptoCurrency, Currency};
+pub use crypto::CryptoCurrency;
+pub use currency::Currency;
 pub use fiat::Fiat;
 pub use in_out::InOut;
 pub use option::CsvOption;

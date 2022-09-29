@@ -98,8 +98,8 @@ mod test {
     }
 
     fn mocked(db: &TradeDatabase) -> Taxes {
-        let since = FixedOffset::west(3600).ymd(2022, 1, 1).and_hms(0, 0, 0);
-        let to = FixedOffset::west(3600)
+        let since = FixedOffset::east(3600).ymd(2022, 1, 1).and_hms(0, 0, 0);
+        let to = FixedOffset::east(3600)
             .ymd(2022, 12, 31)
             .and_hms(23, 59, 59);
         Taxes::new(db, since, to)
