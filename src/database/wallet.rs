@@ -35,19 +35,19 @@ impl WalletDatabase {
 
     /// Get the amount of assets detained from these trades
     fn count(trades: &[&Trade]) -> Decimal {
-        let mut amount = Decimal::ZERO;
-        amount += trades
+        let incoming_assets = trades
             .iter()
             .filter(|t| Self::has_asset_increased(t))
             .map(|t| Self::asset_amount(t)) // NOTE: for incoming operations fee must be subtracted, since is kept by Bitpanda
             .sum::<Decimal>();
-        amount -= trades
+        debug!("found {} incoming assets", incoming_assets);
+        let outgoing_assets = trades
             .iter()
             .filter(|t| Self::has_asset_decreased(t))
             .map(|t| Self::asset_amount(t))
             .sum::<Decimal>();
-        debug!("found {} assets", amount);
-        amount
+        debug!("found {} outgoing assets", outgoing_assets);
+        incoming_assets - outgoing_assets
     }
 
     /// Check whether asset in trade has increased in quantity, according to these rules:

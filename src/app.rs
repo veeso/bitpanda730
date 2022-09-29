@@ -56,6 +56,7 @@ impl App {
         let taxes = Taxes::new(&self.trades, self.since, self.to);
         debug!("calculating IVAFE");
         let ivafe = taxes.ivafe();
+        info!("IVAFE is: {}", ivafe);
         todo!()
     }
 }

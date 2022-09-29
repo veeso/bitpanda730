@@ -29,9 +29,13 @@ impl<'a> Taxes<'a> {
         Self { trades, since, to }
     }
 
-    /// Le persone fisiche residenti in Italia che hanno prodotti finanziari, libretti di risparmio o conti correnti presso intermediari esteri,
-    /// sono tenuti a versare anche l’IVAFE, ossia l’Imposta sul Valore delle Attività Finanziarie all’Estero. Tale imposta è applicata in modo
-    /// proporzionale al 2 per mille annuo del valore delle attività finanziarie.
+    /// Calculate the tax on the foreign bank account (Bitpanda is located in Austria)
+    ///
+    /// > Le persone fisiche residenti in Italia che hanno prodotti finanziari,
+    /// > libretti di risparmio o conti correnti presso intermediari esteri,
+    /// > Sono tenuti a versare anche l’IVAFE, ossia l’Imposta sul Valore delle Attività Finanziarie all’Estero.
+    /// > Tale imposta è applicata in modo
+    /// > proporzionale al 2 per mille annuo del valore delle attività finanziarie.
     pub fn ivafe(&self) -> Decimal {
         let avg_balance = self.average_balance();
         debug!("average balance for this year is {}", avg_balance);
@@ -49,19 +53,28 @@ impl<'a> Taxes<'a> {
     /// Calculate the average balance along the year
     /// From Agenzia delle entrate: (<https://www.agenziaentrate.gov.it/portale/web/guest/schede/comunicazioni/integrativa-archivio-dei-rapporti-con-operatori-finanziari/giacenza-media-annua#:~:text=Il%20calcolo%20della%20giacenza%20media,il%20deposito%2Fconto%20risulta%20attivo.>)
     ///
-    /// > Per giacenza media annua si intende l’importo medio delle somme a credito del cliente in un dato periodo ragguagliato ad un anno.
+    /// > Per giacenza media annua si intende l’importo medio delle somme
+    /// > a credito del cliente in un dato periodo ragguagliato ad un anno.
     /// > Il calcolo della giacenza media annua si determina dividendo la somma delle giacenze giornaliere per 365,
     /// > indipendentemente dal numero di giorni in cui il deposito/conto risulta attivo.
     /// > Per giacenze giornaliere si intendono i saldi giornalieri per valuta.
     fn average_balance(&self) -> Decimal {
         let mut date = self.since;
         let mut total_balance = Decimal::ZERO;
+        // Iterate over the days in the time range
         while date < self.to {
             todo!("calc price for the day; asset price must be calculated using the latest year quotation");
-            let balance = Decimal::ZERO;
-            debug!("balance at {} ({}): {}", date, date.ordinal(), balance);
+            let fiat_balance = self.trades.fiat_balance_at(date);
+            debug!(
+                "FIAT balance at {} ({}): {}",
+                date,
+                date.ordinal(),
+                fiat_balance
+            );
+            total_balance += fiat_balance;
+            // calculate balance at date for each asset
+            todo!("calc balance at date for each asset");
             // incr total balance, days and date
-            total_balance += balance;
             date += chrono::Duration::days(1);
         }
         (total_balance / Decimal::from(self.to.ordinal())).round_dp(2)

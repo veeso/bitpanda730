@@ -7,6 +7,7 @@ use crate::bitpanda::{
     Trade,
 };
 
+use chrono::{DateTime, FixedOffset};
 use rust_decimal::Decimal;
 use std::collections::{HashMap, HashSet};
 
@@ -54,15 +55,31 @@ impl TradeDatabase {
 
     /// Get current FIAT balance in the bitpanda wallet
     pub fn fiat_balance(&self) -> Decimal {
-        let incoming_fiat = self
-            .trades
+        let trades: Vec<&Trade> = self.trades().iter().collect();
+        self.calc_fiat_balance_from_trades(&trades)
+    }
+
+    /// Get the FIAT balance at the provided date
+    pub fn fiat_balance_at(&self, date: DateTime<FixedOffset>) -> Decimal {
+        let trades_at: Vec<&Trade> = self
+            .trades()
+            .iter()
+            .filter(|t| t.timestamp() <= date)
+            .collect();
+        self.calc_fiat_balance_from_trades(&trades_at)
+    }
+
+    // -- private
+
+    /// Calculate the FIAT balance from provided trades
+    fn calc_fiat_balance_from_trades(&self, trades: &[&Trade]) -> Decimal {
+        let incoming_fiat = trades
             .iter()
             .filter(|t| Self::is_fiat_incoming(t))
             .map(|t| t.amount_fiat() - t.fee().unwrap_or_default()) // NOTE: for incoming operations fee must be subtracted, since is kept by Bitpanda
             .sum::<Decimal>();
         debug!("total incoming fiat amount: {}", incoming_fiat);
-        let outgoing_fiat = self
-            .trades
+        let outgoing_fiat = trades
             .iter()
             .filter(|t| Self::is_fiat_outgoing(t))
             .map(|t| t.amount_fiat())
@@ -135,5 +152,13 @@ mod test {
     fn should_calc_balance() {
         let db = DatabaseTradeMock::mock();
         assert_eq!(db.fiat_balance(), dec!(7377.54));
+    }
+
+    #[test]
+    fn should_calc_balance_at() {
+        use chrono::prelude::*;
+        let db = DatabaseTradeMock::mock();
+        let date = FixedOffset::east(3600).ymd(2021, 08, 15).and_hms(0, 0, 0);
+        assert_eq!(db.fiat_balance_at(date), dec!(7934.88));
     }
 }
