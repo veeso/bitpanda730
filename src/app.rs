@@ -3,19 +3,24 @@
 //! This module exposes the main application workflow
 
 use crate::{
-    args::Args, bitpanda::Trade, database::TradeDatabase, parser::BitpandaTradeParser, tax::Taxes,
+    args::Args,
+    bitpanda::Trade,
+    database::{QuoteDatabase, TradeDatabase, WalletDatabase},
+    parser::BitpandaTradeParser,
+    tax::Taxes,
 };
 
 use chrono::prelude::*;
 use chrono::{DateTime, FixedOffset};
+use spinners::{Spinner, Spinners};
 use std::convert::TryFrom;
 
 /// Application container
 pub struct App {
     trades: TradeDatabase,
+    wallet: WalletDatabase,
     since: DateTime<FixedOffset>,
     to: DateTime<FixedOffset>,
-    year: i32,
 }
 
 impl TryFrom<Args> for App {
@@ -39,11 +44,12 @@ impl TryFrom<Args> for App {
             .filter(|trade| since <= trade.timestamp() && to >= trade.timestamp())
             .collect();
         info!("working on a total amount of {} trades", trades.len());
+        let trades = TradeDatabase::from(trades);
         Ok(App {
-            trades: TradeDatabase::from(trades),
+            wallet: WalletDatabase::load(&trades),
+            trades,
             since,
             to,
-            year: args.year,
         })
     }
 }
@@ -51,13 +57,26 @@ impl TryFrom<Args> for App {
 impl App {
     /// Run application
     pub fn run(mut self) -> anyhow::Result<()> {
+        let quotes = self.load_quotes_database()?;
+        debug!("quotes loaded");
         info!("current FIAT balance: {}", self.trades.fiat_balance());
         debug!("taxes setup");
-        let taxes = Taxes::new(&self.trades, self.since, self.to);
+        let taxes = Taxes::new(&self.trades, &quotes, &self.wallet, self.since, self.to);
         debug!("calculating IVAFE");
         let ivafe = taxes.ivafe();
         info!("IVAFE is: {}", ivafe);
         todo!()
+    }
+
+    /// Load quotes database from trades
+    fn load_quotes_database(&self) -> anyhow::Result<QuoteDatabase> {
+        let from = DateTime::from(self.since);
+        let to = DateTime::from(self.to);
+        debug!("loading quotes from {} to {}...", from, to);
+        let mut sp = Spinner::new(Spinners::Dots, "loading asset prices...".to_string());
+        let quotes = QuoteDatabase::load(&self.trades, from, to)?;
+        sp.stop();
+        Ok(quotes)
     }
 }
 

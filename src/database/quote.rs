@@ -6,9 +6,9 @@ use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use std::collections::HashMap;
 
-use crate::bitpanda::trade::Asset;
+use crate::bitpanda::trade::{Asset, AssetClass};
 use crate::database::TradeDatabase;
-use crate::finance::Exchange;
+use crate::finance::{BitpandaClient, YahooFinanceClient};
 
 mod symbols;
 use symbols::Symbols;
@@ -25,12 +25,16 @@ impl QuoteDatabase {
         from: DateTime<Utc>,
         to: DateTime<Utc>,
     ) -> anyhow::Result<Self> {
-        let exchange = Self::load_exchange(from, to)?;
+        let yahoo_finance = Self::load_exchange(from, to)?;
+        let bitpanda = BitpandaClient::new(from, to);
         let assets = trades.collect_assets();
         debug!("collected {} assets from trades", assets.len());
         let mut quotes = HashMap::with_capacity(assets.len());
         for asset in assets.into_iter() {
-            quotes.insert(asset.clone(), Self::asset_price(&exchange, asset, to)?);
+            quotes.insert(
+                asset.0.clone(),
+                Self::asset_price(&yahoo_finance, &bitpanda, asset.0, asset.1, to)?,
+            );
         }
         Ok(Self { quotes })
     }
@@ -42,21 +46,55 @@ impl QuoteDatabase {
 
     // -- loaders
 
-    fn load_exchange(from: DateTime<Utc>, to: DateTime<Utc>) -> anyhow::Result<Exchange> {
+    fn load_exchange(from: DateTime<Utc>, to: DateTime<Utc>) -> anyhow::Result<YahooFinanceClient> {
         debug!("loading exchange in time range {} - {}", from, to);
-        Exchange::new(from, to)
+        YahooFinanceClient::new(from, to)
     }
 
     /// Get asset price
     fn asset_price(
-        exchange: &Exchange,
+        yahoo_finance: &YahooFinanceClient,
+        bitpanda: &BitpandaClient,
         asset: Asset,
+        asset_class: AssetClass,
         price_at: DateTime<Utc>,
     ) -> anyhow::Result<Decimal> {
         debug!("looking up asset {:?}", asset);
+        match asset_class {
+            AssetClass::Commodity | AssetClass::Etf | AssetClass::Metal => {
+                Self::asset_price_from_bitpanda(bitpanda, asset, price_at)
+            }
+            AssetClass::Fiat | AssetClass::Stock | AssetClass::Cryptocurrency => {
+                Self::asset_price_from_yahoo(yahoo_finance, asset, price_at)
+            }
+        }
+    }
+
+    fn asset_price_from_yahoo(
+        yahoo_finance: &YahooFinanceClient,
+        asset: Asset,
+        price_at: DateTime<Utc>,
+    ) -> anyhow::Result<Decimal> {
+        debug!("getting asset price from Yahoo");
         let symbol = Symbols::lookup(asset);
         debug!("got symbol {}", symbol);
-        let quotation = exchange.get_symbol_quotes(&symbol)?;
+        let quotation = yahoo_finance.get_symbol_quotes(&symbol)?;
+        let price = quotation.price_at(price_at);
+        debug!(
+            "got quotation for {}; price at {}: {}",
+            symbol, price_at, price
+        );
+        Ok(price)
+    }
+
+    fn asset_price_from_bitpanda(
+        bitpanda: &BitpandaClient,
+        asset: Asset,
+        price_at: DateTime<Utc>,
+    ) -> anyhow::Result<Decimal> {
+        debug!("getting asset price from Bitpanda");
+        let symbol = asset.to_string();
+        let quotation = bitpanda.get_symbols_quotes(&symbol)?;
         let price = quotation.price_at(price_at);
         debug!(
             "got quotation for {}; price at {}: {}",

@@ -65,10 +65,19 @@ impl Quotes {
 impl Quote {
     /// Create a new Quote with USD price
     pub fn usd(date: DateTime<Utc>, price: Decimal) -> Self {
+        Self::new(date, price, Currency::Usd)
+    }
+
+    /// Create a new quote with EUR price
+    pub fn eur(date: DateTime<Utc>, price: Decimal) -> Self {
+        Self::new(date, price, Currency::Eur)
+    }
+
+    fn new(date: DateTime<Utc>, price: Decimal, currency: Currency) -> Self {
         Self {
             date,
             price,
-            currency: Currency::Usd,
+            currency,
         }
     }
 

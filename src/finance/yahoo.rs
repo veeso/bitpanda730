@@ -1,24 +1,23 @@
-//! # Exchange
+//! # YahooFinanceClient
 //!
-//! the exchange provides functions to scrape the prices for symbols
+//! the yahoo finance client provides functions to scrape the prices for symbols
 
 use chrono::prelude::*;
 use chrono::Utc;
 use rust_decimal::{prelude::FromPrimitive, Decimal};
 use yahoo_finance::history;
 
-mod quote;
-use quote::{Quote, Quotes};
+use super::{Quote, Quotes};
 
 const EUR_USD_SYMBOL: &str = "EURUSD=x";
 
-pub struct Exchange {
+pub struct YahooFinanceClient {
     eur_usd: Quotes,
     from: DateTime<Utc>,
     to: DateTime<Utc>,
 }
 
-impl Exchange {
+impl YahooFinanceClient {
     /// Create a new exchange instance. Working time range must be provided
     pub fn new(from: DateTime<Utc>, to: DateTime<Utc>) -> anyhow::Result<Self> {
         Ok(Self {
@@ -63,7 +62,7 @@ mod test {
     fn should_init_exchange() {
         let from = Utc.from_utc_datetime(&NaiveDate::from_ymd(2021, 1, 1).and_hms(0, 0, 0));
         let to = Utc.from_utc_datetime(&NaiveDate::from_ymd(2021, 12, 31).and_hms(23, 59, 59));
-        let exchange = Exchange::new(from, to).unwrap();
+        let exchange = YahooFinanceClient::new(from, to).unwrap();
         let september23 =
             Utc.from_utc_datetime(&NaiveDate::from_ymd(2021, 9, 23).and_hms(23, 59, 59));
         assert_eq!(
@@ -76,7 +75,7 @@ mod test {
     fn should_fetch_symbol() {
         let from = Utc.from_utc_datetime(&NaiveDate::from_ymd(2022, 1, 1).and_hms(0, 0, 0));
         let to = Utc.from_utc_datetime(&NaiveDate::from_ymd(2022, 12, 31).and_hms(23, 59, 59));
-        let exchange = Exchange::new(from, to).unwrap();
+        let exchange = YahooFinanceClient::new(from, to).unwrap();
         let quotes = exchange.get_symbol_quotes("AMZN").unwrap();
         // check price for 23/09/2022
         let september23 =

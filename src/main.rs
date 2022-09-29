@@ -33,7 +33,7 @@ fn main() -> anyhow::Result<()> {
     // setup logging
     LogBuilder::new()
         .filter_level(if args.debug {
-            LevelFilter::Trace
+            LevelFilter::Debug
         } else if args.verbose {
             LevelFilter::Info
         } else {

@@ -2,6 +2,10 @@
 //!
 //! This module provides finance tools
 
-mod exchange;
+mod bitpanda;
+mod quote;
+mod yahoo;
 
-pub use exchange::Exchange;
+pub use bitpanda::BitpandaClient;
+pub use quote::{Quote, Quotes};
+pub use yahoo::YahooFinanceClient;

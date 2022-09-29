@@ -25,7 +25,7 @@ impl BitpandaTradeParser {
         let mut trades: Vec<Trade> = Vec::new();
         for trade in reader.deserialize::<Trade>() {
             let trade = trade?;
-            trace!("found trade {:?}", trade);
+            debug!("found trade {:?}", trade);
             trades.push(trade);
         }
         info!("found {} trades in CSV file", trades.len());

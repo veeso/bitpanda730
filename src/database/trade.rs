@@ -43,11 +43,11 @@ impl TradeDatabase {
         grouped
     }
 
-    /// Collect assets from database (unique)
-    pub fn collect_assets(&self) -> Vec<Asset> {
+    /// Collect assets and their class from database (unique)
+    pub fn collect_assets(&self) -> Vec<(Asset, AssetClass)> {
         self.trades
             .iter()
-            .map(|x| x.asset())
+            .map(|x| (x.asset(), x.asset_class()))
             .collect::<HashSet<_>>()
             .into_iter()
             .collect()
