@@ -2,7 +2,7 @@
 //!
 //! asset defintion
 
-use super::Currency;
+use super::{CryptoCurrency, Currency};
 
 /// Defines the asset name. The asset can be a currency or an asset name (stock code)
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq, Hash)]
@@ -13,6 +13,19 @@ pub enum Asset {
     HongKong(i64),
 }
 
+impl ToString for Asset {
+    fn to_string(&self) -> String {
+        (match self {
+            Self::Currency(Currency::Crypto(CryptoCurrency::OneInch)) => "1Inch".to_string(),
+            Self::Currency(Currency::Crypto(x)) => format!("{:?}", x),
+            Self::Currency(Currency::Fiat(x)) => format!("{:?}", x),
+            Self::Name(name) => name.to_string(),
+            Self::HongKong(num) => num.to_string(),
+        })
+        .to_uppercase()
+    }
+}
+
 #[cfg(test)]
 mod test {
 
@@ -21,6 +34,33 @@ mod test {
 
     use pretty_assertions::assert_eq;
     use std::io::Cursor;
+
+    #[test]
+    fn should_convert_asset_to_string() {
+        assert_eq!(
+            Asset::Name(String::from("AMZN")).to_string().as_str(),
+            "AMZN"
+        );
+        assert_eq!(Asset::HongKong(1197).to_string().as_str(), "1197");
+        assert_eq!(
+            Asset::Currency(Currency::Fiat(Fiat::Eur))
+                .to_string()
+                .as_str(),
+            "EUR"
+        );
+        assert_eq!(
+            Asset::Currency(Currency::Crypto(CryptoCurrency::Btc))
+                .to_string()
+                .as_str(),
+            "BTC"
+        );
+        assert_eq!(
+            Asset::Currency(Currency::Crypto(CryptoCurrency::OneInch))
+                .to_string()
+                .as_str(),
+            "1INCH"
+        );
+    }
 
     #[test]
     fn should_decode_asset() {
