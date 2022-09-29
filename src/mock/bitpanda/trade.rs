@@ -80,6 +80,29 @@ impl TradeGenerator {
             .asset_market_price(asset_market_price)
             .into()
     }
+
+    pub fn transfer(
+        timestamp: DateTime<FixedOffset>,
+        in_out: InOut,
+        amount: Decimal,
+        fiat: Fiat,
+        amount_asset: Decimal,
+        asset: Asset,
+        asset_class: AssetClass,
+        asset_market_price: Decimal,
+    ) -> Trade {
+        TradeBuilder::default()
+            .timestamp(timestamp)
+            .in_out(in_out)
+            .amount_fiat(amount)
+            .fiat(fiat)
+            .transaction_type(TransactionType::Transfer)
+            .amount_asset(amount_asset)
+            .asset(asset)
+            .asset_class(asset_class)
+            .asset_market_price(asset_market_price)
+            .into()
+    }
 }
 
 #[derive(Debug)]

@@ -108,14 +108,14 @@ mod test {
     #[test]
     fn should_get_trades() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.trades().len(), 12);
+        assert_eq!(db.trades().len(), 14);
     }
 
     #[test]
     fn should_group_by_asset() {
         let db = DatabaseTradeMock::mock();
         let groups = db.group_by_asset();
-        assert_eq!(groups.len(), 7);
+        assert_eq!(groups.len(), 8);
         assert_eq!(
             groups
                 .get(&Asset::Name(String::from("AMZN")))
@@ -128,12 +128,12 @@ mod test {
     #[test]
     fn should_collect_assets() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.collect_assets().len(), 7)
+        assert_eq!(db.collect_assets().len(), 8)
     }
 
     #[test]
     fn should_calc_balance() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.fiat_balance(), dec!(7782.54));
+        assert_eq!(db.fiat_balance(), dec!(7377.54));
     }
 }

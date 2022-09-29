@@ -1,4 +1,4 @@
-use crate::bitpanda::trade::{Asset, AssetClass, CryptoCurrency, Currency, Fiat};
+use crate::bitpanda::trade::{Asset, AssetClass, CryptoCurrency, Currency, Fiat, InOut};
 use crate::database::TradeDatabase;
 use crate::mock::bitpanda::TradeGenerator;
 
@@ -109,6 +109,26 @@ impl DatabaseTradeMock {
                 Asset::Name(String::from("PYPL")),
                 AssetClass::Stock,
                 dec!(188.51),
+            ),
+            TradeGenerator::buy(
+                DateTime::from_str("2021-12-12T12:32:24Z").unwrap(),
+                dec!(405.0),
+                Fiat::Eur,
+                dec!(300.0),
+                Asset::Currency(Currency::Crypto(CryptoCurrency::Ada)),
+                AssetClass::Cryptocurrency,
+                dec!(1.35),
+            ),
+            TradeGenerator::transfer(
+                // NOTE: staking
+                DateTime::from_str("2021-12-12T12:32:24Z").unwrap(),
+                InOut::Outgoing,
+                dec!(270.0),
+                Fiat::Eur,
+                dec!(200.0),
+                Asset::Currency(Currency::Crypto(CryptoCurrency::Ada)),
+                AssetClass::Cryptocurrency,
+                dec!(1.35),
             ),
         ])
     }

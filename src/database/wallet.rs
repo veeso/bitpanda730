@@ -93,7 +93,7 @@ impl WalletDatabase {
 mod test {
 
     use super::*;
-    use crate::bitpanda::trade::{Currency, Fiat};
+    use crate::bitpanda::trade::{CryptoCurrency, Currency, Fiat};
     use crate::mock::database::DatabaseTradeMock;
 
     use pretty_assertions::assert_eq;
@@ -102,7 +102,7 @@ mod test {
     fn should_load_wallet_database() {
         let trades = DatabaseTradeMock::mock();
         let db = WalletDatabase::load(&trades);
-        assert_eq!(db.assets.len(), 7);
+        assert_eq!(db.assets.len(), 8);
     }
 
     #[test]
@@ -128,6 +128,12 @@ mod test {
 
     #[test]
     fn should_get_asset_balance_for_transfer() {
-        todo!("impl to mock");
+        let trades = DatabaseTradeMock::mock();
+        let db = WalletDatabase::load(&trades);
+        assert_eq!(
+            db.balance(&Asset::Currency(Currency::Crypto(CryptoCurrency::Ada)))
+                .unwrap(),
+            dec!(100.0)
+        );
     }
 }
