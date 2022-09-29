@@ -78,6 +78,15 @@ impl DatabaseTradeMock {
                 AssetClass::Stock,
                 dec!(167.25),
             ),
+            TradeGenerator::buy(
+                DateTime::from_str("2021-08-30T12:32:24Z").unwrap(),
+                dec!(865.41),
+                Fiat::Eur,
+                dec!(3.0),
+                Asset::Name(String::from("PYPL")),
+                AssetClass::Stock,
+                dec!(288.47),
+            ),
             TradeGenerator::sell(
                 DateTime::from_str("2021-09-22T16:32:24Z").unwrap(),
                 dec!(313.04),
@@ -91,6 +100,15 @@ impl DatabaseTradeMock {
                 DateTime::from_str("2021-09-24T12:32:24Z").unwrap(),
                 dec!(500.00),
                 Fiat::Eur,
+            ),
+            TradeGenerator::sell(
+                DateTime::from_str("2021-12-10T12:32:24Z").unwrap(),
+                dec!(565.53),
+                Fiat::Eur,
+                dec!(3.0),
+                Asset::Name(String::from("PYPL")),
+                AssetClass::Stock,
+                dec!(188.51),
             ),
         ])
     }

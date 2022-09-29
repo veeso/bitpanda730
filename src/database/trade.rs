@@ -76,7 +76,6 @@ impl TradeDatabase {
 mod test {
 
     use super::*;
-    use crate::bitpanda::trade::{CryptoCurrency, Currency, Fiat};
     use crate::mock::database::DatabaseTradeMock;
 
     use pretty_assertions::assert_eq;
@@ -84,14 +83,14 @@ mod test {
     #[test]
     fn should_get_trades() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.trades().len(), 10);
+        assert_eq!(db.trades().len(), 12);
     }
 
     #[test]
     fn should_group_by_asset() {
         let db = DatabaseTradeMock::mock();
         let groups = db.group_by_asset();
-        assert_eq!(groups.len(), 6);
+        assert_eq!(groups.len(), 7);
         assert_eq!(
             groups
                 .get(&Asset::Name(String::from("AMZN")))
@@ -104,7 +103,7 @@ mod test {
     #[test]
     fn should_collect_assets() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.collect_assets().len(), 6)
+        assert_eq!(db.collect_assets().len(), 7)
     }
 
     #[test]

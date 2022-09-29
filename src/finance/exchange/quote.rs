@@ -83,7 +83,7 @@ impl Quote {
             "applying USD to EUR conversion; 1$ = {}€ at {}",
             eur_change, self.date
         );
-        self.price = self.price / eur_change;
+        self.price /= eur_change;
         // set currency to eur
         self.currency = Currency::Eur;
         Ok(())

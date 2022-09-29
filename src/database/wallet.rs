@@ -3,7 +3,7 @@
 //! The wallet database contains all the assets detained by your wallet
 
 use super::TradeDatabase;
-use crate::bitpanda::trade::{Asset, InOut, Trade};
+use crate::bitpanda::trade::{Asset, AssetClass, InOut, Trade, TransactionType};
 
 use rust_decimal::Decimal;
 use std::collections::HashMap;
@@ -35,20 +35,57 @@ impl WalletDatabase {
 
     /// Get the amount of assets detained from these trades
     fn count(trades: &[&Trade]) -> Decimal {
-        todo!("failed; check buy sell");
         let mut amount = Decimal::ZERO;
         amount += trades
             .iter()
-            .filter(|t| t.in_out() == InOut::Incoming && t.amount_asset().is_some())
-            .map(|t| t.amount_asset().unwrap_or_default()) // NOTE: for incoming operations fee must be subtracted, since is kept by Bitpanda
+            .filter(|t| Self::has_asset_increased(t))
+            .map(|t| Self::asset_amount(t)) // NOTE: for incoming operations fee must be subtracted, since is kept by Bitpanda
             .sum::<Decimal>();
         amount -= trades
             .iter()
-            .filter(|t| t.in_out() == InOut::Outgoing && t.amount_asset().is_some())
-            .map(|t| t.amount_asset().unwrap_or_default())
+            .filter(|t| Self::has_asset_decreased(t))
+            .map(|t| Self::asset_amount(t))
             .sum::<Decimal>();
         debug!("found {} assets", amount);
         amount
+    }
+
+    /// Check whether asset in trade has increased in quantity, according to these rules:
+    ///
+    /// - the trade is FIAT and the direction is IN
+    /// - the transaction is BUY OR is INCOMING TRANSFER
+    fn has_asset_increased(trade: &Trade) -> bool {
+        if trade.asset_class() == AssetClass::Fiat && trade.in_out() == InOut::Incoming {
+            true
+        } else {
+            trade.transaction_type() == TransactionType::Buy
+                || (trade.transaction_type() == TransactionType::Transfer
+                    && trade.in_out() == InOut::Incoming)
+        }
+    }
+
+    /// Check whether asset in trade has decreased in quantity, according to these rules:
+    ///
+    /// - the trade is FIAT and the direction is OUT
+    /// - the transaction is SELL OR is OUTGOING TRANSFER
+    fn has_asset_decreased(trade: &Trade) -> bool {
+        if trade.asset_class() == AssetClass::Fiat && trade.in_out() == InOut::Outgoing {
+            true
+        } else {
+            trade.transaction_type() == TransactionType::Sell
+                || (trade.transaction_type() == TransactionType::Transfer
+                    && trade.in_out() == InOut::Outgoing)
+        }
+    }
+
+    /// Get asset amount
+    /// If asset is FIAT, get FIAT amount, otherwise amount asset
+    fn asset_amount(trade: &Trade) -> Decimal {
+        if trade.asset_class() == AssetClass::Fiat {
+            trade.amount_fiat()
+        } else {
+            trade.amount_asset().unwrap_or_default()
+        }
     }
 }
 
@@ -56,6 +93,7 @@ impl WalletDatabase {
 mod test {
 
     use super::*;
+    use crate::bitpanda::trade::{Currency, Fiat};
     use crate::mock::database::DatabaseTradeMock;
 
     use pretty_assertions::assert_eq;
@@ -64,16 +102,32 @@ mod test {
     fn should_load_wallet_database() {
         let trades = DatabaseTradeMock::mock();
         let db = WalletDatabase::load(&trades);
-        assert_eq!(db.assets.len(), 6);
+        assert_eq!(db.assets.len(), 7);
     }
 
     #[test]
-    fn should_get_asset_balance() {
+    fn should_get_asset_balance_for_stock() {
         let trades = DatabaseTradeMock::mock();
         let db = WalletDatabase::load(&trades);
         assert_eq!(
             db.balance(&Asset::Name(String::from("AMZN"))).unwrap(),
             dec!(1.0)
         );
+    }
+
+    #[test]
+    fn should_get_asset_balance_for_fiat() {
+        let trades = DatabaseTradeMock::mock();
+        let db = WalletDatabase::load(&trades);
+        assert_eq!(
+            db.balance(&Asset::Currency(Currency::Fiat(Fiat::Eur)))
+                .unwrap(),
+            dec!(9680.0)
+        );
+    }
+
+    #[test]
+    fn should_get_asset_balance_for_transfer() {
+        todo!("impl to mock");
     }
 }
