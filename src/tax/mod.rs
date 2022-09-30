@@ -143,7 +143,16 @@ mod test {
         let quotes = DatabaseQuoteMock::mock();
         let wallet = DatabaseWalletMock::mock();
         let tax = mocked(&trades, &quotes, &wallet);
-        assert_eq!(tax.ivafe().unwrap(), dec!(18.88));
+        assert_eq!(tax.ivafe().unwrap(), dec!(19.47));
+    }
+
+    #[test]
+    fn should_return_ivafe_0_if_below_5000() {
+        let trades = TradeDatabase::from(vec![]);
+        let quotes = DatabaseQuoteMock::mock();
+        let wallet = WalletDatabase::load(&trades.all());
+        let tax = mocked(&trades, &quotes, &wallet);
+        assert_eq!(tax.ivafe().unwrap(), Decimal::ZERO);
     }
 
     #[test]
@@ -152,7 +161,7 @@ mod test {
         let quotes = DatabaseQuoteMock::mock();
         let wallet = DatabaseWalletMock::mock();
         let tax = mocked(&trades, &quotes, &wallet);
-        assert_eq!(tax.average_balance().unwrap(), dec!(9441.02));
+        assert_eq!(tax.average_balance().unwrap().round_dp(2), dec!(9736.96));
     }
 
     fn mocked<'a>(
