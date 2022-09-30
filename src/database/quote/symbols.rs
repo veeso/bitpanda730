@@ -9,7 +9,7 @@ pub struct Symbols;
 
 impl Symbols {
     /// Get yahoo finance name for an asset
-    pub fn lookup(asset: Asset) -> String {
+    pub fn lookup(asset: &Asset) -> String {
         match asset {
             Asset::Currency(Currency::Crypto(CryptoCurrency::Aave)) => "AAVE-USD".to_string(),
             Asset::Currency(Currency::Crypto(CryptoCurrency::Ach)) => "ACH-USD".to_string(),
@@ -230,7 +230,8 @@ impl Symbols {
             Asset::Currency(Currency::Fiat(Fiat::Sek)) => "USDSEK=x".to_string(),
             Asset::Currency(Currency::Fiat(Fiat::Try)) => "USDTRY=x".to_string(),
             Asset::Currency(Currency::Fiat(Fiat::Usd)) => "USDT-USD".to_string(),
-            Asset::Name(name) => name,
+            Asset::Metal(metal) => metal.to_string(),
+            Asset::Name(name) => name.to_string(),
             Asset::HongKong(id) => format!("{}.HK", id),
         }
     }
@@ -245,13 +246,13 @@ mod test {
     #[test]
     fn should_resolve_asset_to_symbol() {
         assert_eq!(
-            Symbols::lookup(Asset::Currency(Currency::Crypto(CryptoCurrency::Btc))).as_str(),
+            Symbols::lookup(&Asset::Currency(Currency::Crypto(CryptoCurrency::Btc))).as_str(),
             "BTC-USD"
         );
         assert_eq!(
-            Symbols::lookup(Asset::Name(String::from("AMZN"))).as_str(),
+            Symbols::lookup(&Asset::Name(String::from("AMZN"))).as_str(),
             "AMZN"
         );
-        assert_eq!(Symbols::lookup(Asset::HongKong(1177)).as_str(), "1177.HK");
+        assert_eq!(Symbols::lookup(&Asset::HongKong(1177)).as_str(), "1177.HK");
     }
 }

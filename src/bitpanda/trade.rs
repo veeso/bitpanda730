@@ -14,7 +14,7 @@ mod in_out;
 mod option;
 mod transaction_type;
 
-pub use asset::Asset;
+pub use asset::{Asset, Metal};
 pub use asset_class::AssetClass;
 pub use crypto::CryptoCurrency;
 pub use currency::Currency;

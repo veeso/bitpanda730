@@ -4,11 +4,16 @@
 
 use super::{CryptoCurrency, Currency};
 
+mod metal;
+
+pub use metal::Metal;
+
 /// Defines the asset name. The asset can be a currency or an asset name (stock code)
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq, Hash)]
 #[serde(untagged)]
 pub enum Asset {
     Currency(Currency),
+    Metal(Metal),
     Name(String),
     HongKong(i64),
 }
@@ -19,6 +24,7 @@ impl ToString for Asset {
             Self::Currency(Currency::Crypto(CryptoCurrency::OneInch)) => "1Inch".to_string(),
             Self::Currency(Currency::Crypto(x)) => format!("{:?}", x),
             Self::Currency(Currency::Fiat(x)) => format!("{:?}", x),
+            Self::Metal(metal) => metal.to_string(),
             Self::Name(name) => name.to_string(),
             Self::HongKong(num) => num.to_string(),
         })
@@ -60,6 +66,10 @@ mod test {
                 .as_str(),
             "1INCH"
         );
+        assert_eq!(Asset::Metal(Metal::Gold).to_string().as_str(), "XAU");
+        assert_eq!(Asset::Metal(Metal::Silver).to_string().as_str(), "XAG");
+        assert_eq!(Asset::Metal(Metal::Palladium).to_string().as_str(), "XPD");
+        assert_eq!(Asset::Metal(Metal::Platinum).to_string().as_str(), "XPT");
     }
 
     #[test]
@@ -83,7 +93,7 @@ mod test {
                 Asset::Currency(Currency::Fiat(Fiat::Eur)),
                 Asset::Currency(Currency::Crypto(CryptoCurrency::Btc)),
                 Asset::Name("TSLA".to_string()),
-                Asset::Name("Gold".to_string()),
+                Asset::Metal(Metal::Gold),
                 Asset::HongKong(1177),
             ]
         );

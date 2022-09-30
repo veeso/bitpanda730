@@ -30,12 +30,18 @@ impl QuoteDatabase {
         let assets = trades.collect_assets();
         debug!("collected {} assets from trades", assets.len());
         let mut quotes = HashMap::with_capacity(assets.len());
-        for asset in assets.into_iter() {
-            quotes.insert(
-                asset.0.clone(),
-                Self::asset_price(&yahoo_finance, &bitpanda, asset.0, asset.1, to)?,
-            );
+        debug!("sorting assets by exchange...");
+        let assets = AssetsSortedByExchange::from(assets);
+        debug!(
+            "assets sorted by exchange; bitpanda: {}; yahoo: {}",
+            assets.bitpanda.len(),
+            assets.yahoo.len()
+        );
+        // get prices
+        if !assets.bitpanda.is_empty() {
+            Self::assets_price_from_bitpanda(&mut quotes, &bitpanda, &assets.bitpanda, to)?;
         }
+        Self::assets_price_from_yahoo(&mut quotes, &yahoo_finance, &assets.yahoo, to)?;
         Ok(Self { quotes })
     }
 
@@ -51,56 +57,71 @@ impl QuoteDatabase {
         YahooFinanceClient::new(from, to)
     }
 
-    /// Get asset price
-    fn asset_price(
+    fn assets_price_from_yahoo(
+        quotes: &mut HashMap<Asset, Decimal>,
         yahoo_finance: &YahooFinanceClient,
-        bitpanda: &BitpandaClient,
-        asset: Asset,
-        asset_class: AssetClass,
+        assets: &[Asset],
         price_at: DateTime<Utc>,
-    ) -> anyhow::Result<Decimal> {
-        debug!("looking up asset {:?}", asset);
-        match asset_class {
-            AssetClass::Commodity | AssetClass::Etf | AssetClass::Metal => {
-                Self::asset_price_from_bitpanda(bitpanda, asset, price_at)
-            }
-            AssetClass::Fiat | AssetClass::Stock | AssetClass::Cryptocurrency => {
-                Self::asset_price_from_yahoo(yahoo_finance, asset, price_at)
+    ) -> anyhow::Result<()> {
+        debug!("getting assets price from Yahoo");
+        for asset in assets.iter() {
+            let symbol = Symbols::lookup(asset);
+            debug!("got symbol {} for {:?}", symbol, asset);
+            let quotation = yahoo_finance.get_symbol_quotes(&symbol)?;
+            let price = quotation.price_at(price_at);
+            debug!(
+                "got quotation for {}; price at {}: {}",
+                symbol, price_at, price
+            );
+            quotes.insert(asset.clone(), price);
+        }
+
+        Ok(())
+    }
+
+    fn assets_price_from_bitpanda(
+        quotes: &mut HashMap<Asset, Decimal>,
+        bitpanda: &BitpandaClient,
+        assets: &[Asset],
+        price_at: DateTime<Utc>,
+    ) -> anyhow::Result<()> {
+        debug!("getting asset price from Bitpanda");
+        let quotations = bitpanda.get_symbols_quotes(assets)?;
+        for (asset, quotation) in quotations.into_iter() {
+            let price = quotation.price_at(price_at);
+            debug!(
+                "got quotation for {}; price at {}: {}",
+                asset.to_string(),
+                price_at,
+                price
+            );
+            quotes.insert(asset, price);
+        }
+        Ok(())
+    }
+}
+
+/// A struct which contains the assets sorted by the exchange to query to get prices
+#[derive(Default)]
+struct AssetsSortedByExchange {
+    bitpanda: Vec<Asset>,
+    yahoo: Vec<Asset>,
+}
+
+impl From<Vec<(Asset, AssetClass)>> for AssetsSortedByExchange {
+    fn from(assets: Vec<(Asset, AssetClass)>) -> Self {
+        let mut sorted_assets = Self::default();
+        for (asset, class) in assets.into_iter() {
+            match class {
+                AssetClass::Commodity | AssetClass::Etf | AssetClass::Metal => {
+                    sorted_assets.bitpanda.push(asset);
+                }
+                AssetClass::Fiat | AssetClass::Stock | AssetClass::Cryptocurrency => {
+                    sorted_assets.yahoo.push(asset);
+                }
             }
         }
-    }
-
-    fn asset_price_from_yahoo(
-        yahoo_finance: &YahooFinanceClient,
-        asset: Asset,
-        price_at: DateTime<Utc>,
-    ) -> anyhow::Result<Decimal> {
-        debug!("getting asset price from Yahoo");
-        let symbol = Symbols::lookup(asset);
-        debug!("got symbol {}", symbol);
-        let quotation = yahoo_finance.get_symbol_quotes(&symbol)?;
-        let price = quotation.price_at(price_at);
-        debug!(
-            "got quotation for {}; price at {}: {}",
-            symbol, price_at, price
-        );
-        Ok(price)
-    }
-
-    fn asset_price_from_bitpanda(
-        bitpanda: &BitpandaClient,
-        asset: Asset,
-        price_at: DateTime<Utc>,
-    ) -> anyhow::Result<Decimal> {
-        debug!("getting asset price from Bitpanda");
-        let symbol = asset.to_string();
-        let quotation = bitpanda.get_symbols_quotes(&symbol)?;
-        let price = quotation.price_at(price_at);
-        debug!(
-            "got quotation for {}; price at {}: {}",
-            symbol, price_at, price
-        );
-        Ok(price)
+        sorted_assets
     }
 }
 
