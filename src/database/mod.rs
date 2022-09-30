@@ -7,5 +7,5 @@ mod trade;
 mod wallet;
 
 pub use quote::QuoteDatabase;
-pub use trade::TradeDatabase;
+pub use trade::{TradeDatabase, TradeQuery, TradeSet};
 pub use wallet::WalletDatabase;

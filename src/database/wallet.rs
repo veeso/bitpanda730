@@ -2,7 +2,7 @@
 //!
 //! The wallet database contains all the assets detained by your wallet
 
-use super::TradeDatabase;
+use super::TradeSet;
 use crate::bitpanda::trade::{Asset, AssetClass, InOut, Trade, TransactionType};
 
 use rust_decimal::Decimal;
@@ -15,7 +15,7 @@ pub struct WalletDatabase {
 
 impl WalletDatabase {
     /// Load wallet from user's trades
-    pub fn load(trades: &TradeDatabase) -> Self {
+    pub fn load(trades: TradeSet) -> Self {
         debug!("loading wallet database");
         let grouped_trades = trades.group_by_asset();
         debug!("loading {} assets", grouped_trades.len());
@@ -32,6 +32,8 @@ impl WalletDatabase {
     pub fn balance(&self, asset: &Asset) -> Option<Decimal> {
         self.assets.get(asset).cloned()
     }
+
+    // -- private
 
     /// Get the amount of assets detained from these trades
     fn count(trades: &[&Trade]) -> Decimal {
@@ -101,14 +103,14 @@ mod test {
     #[test]
     fn should_load_wallet_database() {
         let trades = DatabaseTradeMock::mock();
-        let db = WalletDatabase::load(&trades);
+        let db = WalletDatabase::load(trades.all());
         assert_eq!(db.assets.len(), 8);
     }
 
     #[test]
     fn should_get_asset_balance_for_stock() {
         let trades = DatabaseTradeMock::mock();
-        let db = WalletDatabase::load(&trades);
+        let db = WalletDatabase::load(trades.all());
         assert_eq!(
             db.balance(&Asset::Name(String::from("AMZN"))).unwrap(),
             dec!(1.0)
@@ -118,7 +120,7 @@ mod test {
     #[test]
     fn should_get_asset_balance_for_fiat() {
         let trades = DatabaseTradeMock::mock();
-        let db = WalletDatabase::load(&trades);
+        let db = WalletDatabase::load(trades.all());
         assert_eq!(
             db.balance(&Asset::Currency(Currency::Fiat(Fiat::Eur)))
                 .unwrap(),
@@ -129,7 +131,7 @@ mod test {
     #[test]
     fn should_get_asset_balance_for_transfer() {
         let trades = DatabaseTradeMock::mock();
-        let db = WalletDatabase::load(&trades);
+        let db = WalletDatabase::load(trades.all());
         assert_eq!(
             db.balance(&Asset::Currency(Currency::Crypto(CryptoCurrency::Ada)))
                 .unwrap(),

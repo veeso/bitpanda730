@@ -46,7 +46,7 @@ impl TryFrom<Args> for App {
         info!("working on a total amount of {} trades", trades.len());
         let trades = TradeDatabase::from(trades);
         Ok(App {
-            wallet: WalletDatabase::load(&trades),
+            wallet: WalletDatabase::load(trades.all()),
             trades,
             since,
             to,
@@ -59,7 +59,7 @@ impl App {
     pub fn run(mut self) -> anyhow::Result<()> {
         let quotes = self.load_quotes_database()?;
         debug!("quotes loaded");
-        info!("current FIAT balance: {}", self.trades.fiat_balance());
+        info!("current FIAT balance: {}", self.trades.all().fiat_balance());
         debug!("taxes setup");
         let taxes = Taxes::new(&self.trades, &quotes, &self.wallet, self.since, self.to);
         debug!("calculating IVAFE");
@@ -70,11 +70,9 @@ impl App {
 
     /// Load quotes database from trades
     fn load_quotes_database(&self) -> anyhow::Result<QuoteDatabase> {
-        let from = DateTime::from(self.since);
-        let to = DateTime::from(self.to);
-        debug!("loading quotes from {} to {}...", from, to);
+        debug!("loading quotes from {} to {}...", self.since, self.to);
         let mut sp = Spinner::new(Spinners::Dots, "loading asset prices...".to_string());
-        let quotes = QuoteDatabase::load(&self.trades, from, to)?;
+        let quotes = QuoteDatabase::load(&self.trades, self.since, self.to)?;
         sp.stop();
         Ok(quotes)
     }
@@ -98,6 +96,6 @@ mod test {
             version: false,
         };
         let app = App::try_from(args).unwrap();
-        assert_eq!(app.trades.trades().len(), 12);
+        assert_eq!(app.trades.all().trades().len(), 12);
     }
 }

@@ -2,12 +2,12 @@
 //!
 //! This module exposes the database for quotes based on assets
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, FixedOffset, Utc};
 use rust_decimal::Decimal;
 use std::collections::HashMap;
 
 use crate::bitpanda::trade::{Asset, AssetClass};
-use crate::database::TradeDatabase;
+use crate::database::{TradeDatabase, TradeQuery};
 use crate::finance::{BitpandaClient, YahooFinanceClient};
 
 mod symbols;
@@ -22,12 +22,16 @@ impl QuoteDatabase {
     /// Load quote database
     pub fn load(
         trades: &TradeDatabase,
-        from: DateTime<Utc>,
-        to: DateTime<Utc>,
+        from: DateTime<FixedOffset>,
+        to: DateTime<FixedOffset>,
     ) -> anyhow::Result<Self> {
+        let assets = trades
+            .select(TradeQuery::default().after(from).before(to))
+            .collect_assets();
+        let from = DateTime::from(from);
+        let to = DateTime::from(to);
         let yahoo_finance = Self::load_exchange(from, to)?;
         let bitpanda = BitpandaClient::new(from, to);
-        let assets = trades.collect_assets();
         debug!("collected {} assets from trades", assets.len());
         let mut quotes = HashMap::with_capacity(assets.len());
         debug!("sorting assets by exchange...");
@@ -152,7 +156,9 @@ mod test {
         assert!(db.price(Asset::Name(String::from("ADBE"))).is_none());
     }
 
-    fn date(year: i32, month: u32, day: u32) -> DateTime<Utc> {
-        Utc.from_utc_datetime(&NaiveDate::from_ymd(year, month, day).and_hms(12, 0, 0))
+    fn date(year: i32, month: u32, day: u32) -> DateTime<FixedOffset> {
+        FixedOffset::west(3600)
+            .ymd(year, month, day)
+            .and_hms(12, 0, 0)
     }
 }

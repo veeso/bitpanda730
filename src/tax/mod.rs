@@ -2,7 +2,7 @@
 //!
 //! This module expose the tax calculators for Italian taxation ruleset
 
-use crate::database::{QuoteDatabase, TradeDatabase, WalletDatabase};
+use crate::database::{QuoteDatabase, TradeDatabase, TradeQuery, WalletDatabase};
 
 use chrono::{DateTime, Datelike, FixedOffset};
 use rust_decimal::Decimal;
@@ -73,7 +73,10 @@ impl<'a> Taxes<'a> {
         let mut total_balance = Decimal::ZERO;
         // Iterate over the days in the time range
         while date < self.to {
-            let fiat_balance = self.trades.fiat_balance_at(date);
+            let fiat_balance = self
+                .trades
+                .select(TradeQuery::default().before(date))
+                .fiat_balance();
             debug!(
                 "FIAT balance at {} ({}): {}",
                 date,
