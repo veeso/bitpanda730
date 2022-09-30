@@ -2,6 +2,9 @@
 //!
 //! This module expose the tax calculators for Italian taxation ruleset
 
+mod gains_and_losses;
+pub use gains_and_losses::GainsAndLosses;
+
 use crate::bitpanda::trade::{Asset, Currency, Fiat};
 use crate::database::{QuoteDatabase, TradeDatabase, TradeQuery, WalletDatabase};
 
@@ -59,6 +62,14 @@ impl<'a> Taxes<'a> {
             info!("IVAFE: {}", ivafe);
             Ok(ivafe.round_dp(2))
         }
+    }
+
+    /// Calculate the capital gains and losses. Taxes are already calculated.
+    ///
+    /// > plusvalenze: reddito dovuto alla vendita a un prezzo superiore di quello di acquisto, ossia un guadagno
+    /// > minusvalenze: controvalore derivante dalla vendita di uno strumento finanziario a un prezzo inferiore rispetto a quello d’acquisto, ossia una perdita
+    pub fn capital_gains_and_losses(&self) -> anyhow::Result<GainsAndLosses> {
+        todo!()
     }
 
     /// Calculate the average balance along the year

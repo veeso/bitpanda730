@@ -7,7 +7,7 @@ use crate::{
     bitpanda::{trade::Fiat, Trade},
     database::{QuoteDatabase, TradeDatabase, WalletDatabase},
     parser::BitpandaTradeParser,
-    tax::Taxes,
+    tax::{GainsAndLosses, Taxes},
 };
 
 use chrono::prelude::*;
@@ -67,7 +67,16 @@ impl App {
         debug!("taxes setup");
         let taxes = Taxes::new(&self.trades, &quotes, &self.wallet, self.since, self.to);
         let ivafe = self.calc_ivafe(&taxes)?;
-        todo!("26%")
+        info!("IVAFE is: € {}", ivafe);
+        let capitals_diff = self.calc_gains_and_losses(&taxes)?;
+        info!(
+            "gains: € {}; losses: € {}; diff: € {}; total taxes to pay: € {}",
+            capitals_diff.gains_value(),
+            capitals_diff.losses_value(),
+            capitals_diff.gains_value() - capitals_diff.losses_value(),
+            capitals_diff.tax_to_pay()
+        );
+        todo!("repr output")
     }
 
     /// Load quotes database from trades
@@ -82,10 +91,20 @@ impl App {
     fn calc_ivafe(&self, taxes: &Taxes) -> anyhow::Result<Decimal> {
         debug!("calculating IVAFE");
         let mut sp = Spinner::new(Spinners::Dots, "Calculating IVAFE...".to_string());
-        let ivafe = taxes.ivafe()?;
+        let ivafe = taxes.ivafe();
         sp.stop();
-        info!("IVAFE is: € {}", ivafe);
-        Ok(ivafe)
+        ivafe
+    }
+
+    fn calc_gains_and_losses(&self, taxes: &Taxes) -> anyhow::Result<GainsAndLosses> {
+        debug!("calculating gains and losses");
+        let mut sp = Spinner::new(
+            Spinners::Dots,
+            "Calculating capital gains and losses...".to_string(),
+        );
+        let capital_diff = taxes.capital_gains_and_losses();
+        sp.stop();
+        capital_diff
     }
 }
 
