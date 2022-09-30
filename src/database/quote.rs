@@ -11,7 +11,7 @@ use crate::database::TradeDatabase;
 use crate::finance::{BitpandaClient, YahooFinanceClient};
 
 mod symbols;
-use symbols::Symbols;
+use symbols::YahooFinanceSymbols;
 
 /// The quote database stores the asset quotations for all the symbols provided
 pub struct QuoteDatabase {
@@ -65,7 +65,7 @@ impl QuoteDatabase {
     ) -> anyhow::Result<()> {
         debug!("getting assets price from Yahoo");
         for asset in assets.iter() {
-            let symbol = Symbols::lookup(asset);
+            let symbol = YahooFinanceSymbols::lookup(asset);
             debug!("got symbol {} for {:?}", symbol, asset);
             let quotation = yahoo_finance.get_symbol_quotes(&symbol)?;
             let price = quotation.price_at(price_at);

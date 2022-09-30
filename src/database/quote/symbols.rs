@@ -5,9 +5,9 @@
 use crate::bitpanda::trade::{Asset, CryptoCurrency, Currency, Fiat};
 
 /// Symbols lookup resolver
-pub struct Symbols;
+pub struct YahooFinanceSymbols;
 
-impl Symbols {
+impl YahooFinanceSymbols {
     /// Get yahoo finance name for an asset
     pub fn lookup(asset: &Asset) -> String {
         match asset {
@@ -244,15 +244,19 @@ mod test {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn should_resolve_asset_to_symbol() {
+    fn should_resolve_asset_to_yahoo_symbol() {
         assert_eq!(
-            Symbols::lookup(&Asset::Currency(Currency::Crypto(CryptoCurrency::Btc))).as_str(),
+            YahooFinanceSymbols::lookup(&Asset::Currency(Currency::Crypto(CryptoCurrency::Btc)))
+                .as_str(),
             "BTC-USD"
         );
         assert_eq!(
-            Symbols::lookup(&Asset::Name(String::from("AMZN"))).as_str(),
+            YahooFinanceSymbols::lookup(&Asset::Name(String::from("AMZN"))).as_str(),
             "AMZN"
         );
-        assert_eq!(Symbols::lookup(&Asset::HongKong(1177)).as_str(), "1177.HK");
+        assert_eq!(
+            YahooFinanceSymbols::lookup(&Asset::HongKong(1177)).as_str(),
+            "1177.HK"
+        );
     }
 }
