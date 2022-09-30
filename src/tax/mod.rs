@@ -2,6 +2,7 @@
 //!
 //! This module expose the tax calculators for Italian taxation ruleset
 
+use crate::bitpanda::trade::Fiat;
 use crate::database::{QuoteDatabase, TradeDatabase, TradeQuery, WalletDatabase};
 
 use chrono::{DateTime, Datelike, FixedOffset};
@@ -73,10 +74,8 @@ impl<'a> Taxes<'a> {
         let mut total_balance = Decimal::ZERO;
         // Iterate over the days in the time range
         while date < self.to {
-            let fiat_balance = self
-                .trades
-                .select(TradeQuery::default().before(date))
-                .fiat_balance();
+            let trades_at_date = self.trades.select(TradeQuery::default().before(date));
+            let fiat_balance = trades_at_date.fiat_balance(Fiat::Eur);
             debug!(
                 "FIAT balance at {} ({}): {}",
                 date,
@@ -84,12 +83,26 @@ impl<'a> Taxes<'a> {
                 fiat_balance
             );
             total_balance += fiat_balance;
-            // calculate balance at date for each asset
-            todo!("calc balance at date for each asset");
+            // calculate balance at date for each asset; get wallet at date first
+            todo!("filter FIAT not EUR");
+            let wallet = WalletDatabase::load(&trades_at_date);
+            let wallet_balance = self.wallet_balance(wallet);
+            debug!(
+                "wallet balance at {} ({}): {}",
+                date,
+                date.ordinal(),
+                wallet_balance
+            );
+            total_balance += wallet_balance;
             // incr total balance, days and date
             date += chrono::Duration::days(1);
         }
         (total_balance / Decimal::from(self.to.ordinal())).round_dp(2)
+    }
+
+    /// Get wallet balance from wallet
+    fn wallet_balance(&self, wallet: WalletDatabase) -> Decimal {
+        todo!()
     }
 }
 

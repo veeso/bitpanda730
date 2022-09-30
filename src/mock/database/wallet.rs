@@ -10,6 +10,6 @@ pub struct DatabaseWalletMock;
 impl DatabaseWalletMock {
     pub fn mock() -> WalletDatabase {
         let db = DatabaseTradeMock::mock();
-        WalletDatabase::load(db.all())
+        WalletDatabase::load(&db.all())
     }
 }

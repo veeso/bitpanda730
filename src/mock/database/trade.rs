@@ -78,6 +78,11 @@ impl DatabaseTradeMock {
                 AssetClass::Stock,
                 dec!(167.25),
             ),
+            TradeGenerator::deposit(
+                DateTime::from_str("2021-08-20T12:32:24Z").unwrap(),
+                dec!(1018.00),
+                Fiat::Usd,
+            ),
             TradeGenerator::buy(
                 DateTime::from_str("2021-08-30T12:32:24Z").unwrap(),
                 dec!(865.41),

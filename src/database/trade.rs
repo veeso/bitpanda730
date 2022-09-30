@@ -39,7 +39,7 @@ impl TradeDatabase {
 mod test {
 
     use super::*;
-    use crate::bitpanda::trade::Asset;
+    use crate::bitpanda::trade::{Asset, Fiat};
     use crate::mock::database::DatabaseTradeMock;
 
     use pretty_assertions::assert_eq;
@@ -47,7 +47,7 @@ mod test {
     #[test]
     fn should_get_trades() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.all().trades().len(), 14);
+        assert_eq!(db.all().trades().len(), 15);
     }
 
     #[test]
@@ -55,7 +55,7 @@ mod test {
         let db = DatabaseTradeMock::mock();
         let set = db.all();
         let groups = set.group_by_asset();
-        assert_eq!(groups.len(), 8);
+        assert_eq!(groups.len(), 9);
         assert_eq!(
             groups
                 .get(&Asset::Name(String::from("AMZN")))
@@ -68,13 +68,14 @@ mod test {
     #[test]
     fn should_collect_assets() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.all().collect_assets().len(), 8)
+        assert_eq!(db.all().collect_assets().len(), 9)
     }
 
     #[test]
     fn should_calc_balance() {
         let db = DatabaseTradeMock::mock();
-        assert_eq!(db.all().fiat_balance(), dec!(7377.54));
+        assert_eq!(db.all().fiat_balance(Fiat::Eur), dec!(7377.54));
+        assert_eq!(db.all().fiat_balance(Fiat::Usd), dec!(1000.0));
     }
 
     #[test]
@@ -83,7 +84,8 @@ mod test {
         let db = DatabaseTradeMock::mock();
         let date = FixedOffset::east(3600).ymd(2021, 08, 15).and_hms(0, 0, 0);
         assert_eq!(
-            db.select(TradeQuery::default().before(date)).fiat_balance(),
+            db.select(TradeQuery::default().before(date))
+                .fiat_balance(Fiat::Eur),
             dec!(7934.88)
         );
     }

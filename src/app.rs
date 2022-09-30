@@ -4,7 +4,7 @@
 
 use crate::{
     args::Args,
-    bitpanda::Trade,
+    bitpanda::{trade::Fiat, Trade},
     database::{QuoteDatabase, TradeDatabase, WalletDatabase},
     parser::BitpandaTradeParser,
     tax::Taxes,
@@ -46,7 +46,7 @@ impl TryFrom<Args> for App {
         info!("working on a total amount of {} trades", trades.len());
         let trades = TradeDatabase::from(trades);
         Ok(App {
-            wallet: WalletDatabase::load(trades.all()),
+            wallet: WalletDatabase::load(&trades.all()),
             trades,
             since,
             to,
@@ -59,7 +59,10 @@ impl App {
     pub fn run(mut self) -> anyhow::Result<()> {
         let quotes = self.load_quotes_database()?;
         debug!("quotes loaded");
-        info!("current FIAT balance: {}", self.trades.all().fiat_balance());
+        info!(
+            "current FIAT balance: €{}",
+            self.trades.all().fiat_balance(Fiat::Eur)
+        );
         debug!("taxes setup");
         let taxes = Taxes::new(&self.trades, &quotes, &self.wallet, self.since, self.to);
         debug!("calculating IVAFE");

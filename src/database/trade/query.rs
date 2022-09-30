@@ -77,6 +77,6 @@ mod test {
         let query = Query::default()
             .after(FixedOffset::east(3600).ymd(2021, 7, 5).and_hms(0, 0, 0))
             .before(FixedOffset::east(3600).ymd(2021, 9, 1).and_hms(0, 0, 0));
-        assert_eq!(query.select(&db.trades).trades().len(), 4);
+        assert_eq!(query.select(&db.trades).trades().len(), 5);
     }
 }

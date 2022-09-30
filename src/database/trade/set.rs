@@ -3,7 +3,7 @@
 //! This module expose a select result on the trade database
 
 use super::Trade;
-use crate::bitpanda::trade::{Asset, AssetClass, Currency, InOut, TransactionType};
+use crate::bitpanda::trade::{Asset, AssetClass, Currency, Fiat, InOut, TransactionType};
 
 use rust_decimal::Decimal;
 use std::collections::{HashMap, HashSet};
@@ -52,10 +52,11 @@ impl<'a> Set<'a> {
     }
 
     /// Get current FIAT balance in the bitpanda wallet
-    pub fn fiat_balance(&self) -> Decimal {
+    pub fn fiat_balance(&self, fiat: Fiat) -> Decimal {
         let incoming_fiat = self
             .trades
             .iter()
+            .filter(|t| t.fiat() == fiat)
             .filter(|t| Self::is_fiat_incoming(t))
             .map(|t| t.amount_fiat() - t.fee().unwrap_or_default()) // NOTE: for incoming operations fee must be subtracted, since is kept by Bitpanda
             .sum::<Decimal>();
@@ -63,6 +64,7 @@ impl<'a> Set<'a> {
         let outgoing_fiat = self
             .trades
             .iter()
+            .filter(|t| t.fiat() == fiat)
             .filter(|t| Self::is_fiat_outgoing(t))
             .map(|t| t.amount_fiat())
             .sum::<Decimal>();

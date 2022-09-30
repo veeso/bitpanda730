@@ -15,7 +15,7 @@ pub struct WalletDatabase {
 
 impl WalletDatabase {
     /// Load wallet from user's trades
-    pub fn load(trades: TradeSet) -> Self {
+    pub fn load(trades: &TradeSet) -> Self {
         debug!("loading wallet database");
         let grouped_trades = trades.group_by_asset();
         debug!("loading {} assets", grouped_trades.len());
@@ -103,14 +103,14 @@ mod test {
     #[test]
     fn should_load_wallet_database() {
         let trades = DatabaseTradeMock::mock();
-        let db = WalletDatabase::load(trades.all());
-        assert_eq!(db.assets.len(), 8);
+        let db = WalletDatabase::load(&trades.all());
+        assert_eq!(db.assets.len(), 9);
     }
 
     #[test]
     fn should_get_asset_balance_for_stock() {
         let trades = DatabaseTradeMock::mock();
-        let db = WalletDatabase::load(trades.all());
+        let db = WalletDatabase::load(&trades.all());
         assert_eq!(
             db.balance(&Asset::Name(String::from("AMZN"))).unwrap(),
             dec!(1.0)
@@ -120,7 +120,7 @@ mod test {
     #[test]
     fn should_get_asset_balance_for_fiat() {
         let trades = DatabaseTradeMock::mock();
-        let db = WalletDatabase::load(trades.all());
+        let db = WalletDatabase::load(&trades.all());
         assert_eq!(
             db.balance(&Asset::Currency(Currency::Fiat(Fiat::Eur)))
                 .unwrap(),
@@ -131,7 +131,7 @@ mod test {
     #[test]
     fn should_get_asset_balance_for_transfer() {
         let trades = DatabaseTradeMock::mock();
-        let db = WalletDatabase::load(trades.all());
+        let db = WalletDatabase::load(&trades.all());
         assert_eq!(
             db.balance(&Asset::Currency(Currency::Crypto(CryptoCurrency::Ada)))
                 .unwrap(),
