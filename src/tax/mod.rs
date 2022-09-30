@@ -2,10 +2,10 @@
 //!
 //! This module expose the tax calculators for Italian taxation ruleset
 
-use crate::bitpanda::trade::Fiat;
+use crate::bitpanda::trade::{Asset, Currency, Fiat};
 use crate::database::{QuoteDatabase, TradeDatabase, TradeQuery, WalletDatabase};
 
-use chrono::{DateTime, Datelike, FixedOffset};
+use chrono::{DateTime, Datelike, FixedOffset, TimeZone};
 use rust_decimal::Decimal;
 
 /// Italian fiscal taxes calculator
@@ -47,17 +47,17 @@ impl<'a> Taxes<'a> {
     /// > Sono tenuti a versare anche l’IVAFE, ossia l’Imposta sul Valore delle Attività Finanziarie all’Estero.
     /// > Tale imposta è applicata in modo
     /// > proporzionale al 2 per mille annuo del valore delle attività finanziarie.
-    pub fn ivafe(&self) -> Decimal {
-        let avg_balance = self.average_balance();
+    pub fn ivafe(&self) -> anyhow::Result<Decimal> {
+        let avg_balance = self.average_balance()?;
         debug!("average balance for this year is {}", avg_balance);
         if avg_balance < dec!(5000.0) {
-            info!("average balance is under 5000€, so IVAFE is not required");
-            Decimal::ZERO
+            info!("average balance is under € 5000, so IVAFE is not required");
+            Ok(Decimal::ZERO)
         } else {
             // avg_balance : 100 = ivafe : 0.2
             let ivafe = avg_balance * dec!(0.002);
             info!("IVAFE: {}", ivafe);
-            ivafe.round_dp(2)
+            Ok(ivafe.round_dp(2))
         }
     }
 
@@ -69,14 +69,18 @@ impl<'a> Taxes<'a> {
     /// > Il calcolo della giacenza media annua si determina dividendo la somma delle giacenze giornaliere per 365,
     /// > indipendentemente dal numero di giorni in cui il deposito/conto risulta attivo.
     /// > Per giacenze giornaliere si intendono i saldi giornalieri per valuta.
-    fn average_balance(&self) -> Decimal {
-        let mut date = self.since;
+    fn average_balance(&self) -> anyhow::Result<Decimal> {
+        let mut date = (*self.since.offset())
+            .ymd(self.since.year(), self.since.month(), self.since.day())
+            .and_hms(23, 59, 59);
         let mut total_balance = Decimal::ZERO;
         // Iterate over the days in the time range
-        while date < self.to {
-            let trades_at_date = self.trades.select(TradeQuery::default().before(date));
-            let fiat_balance = trades_at_date.fiat_balance(Fiat::Eur);
-            debug!(
+        while date <= self.to {
+            let fiat_balance = self
+                .trades
+                .select(TradeQuery::default().before(date))
+                .fiat_balance(Fiat::Eur);
+            info!(
                 "FIAT balance at {} ({}): {}",
                 date,
                 date.ordinal(),
@@ -84,10 +88,12 @@ impl<'a> Taxes<'a> {
             );
             total_balance += fiat_balance;
             // calculate balance at date for each asset; get wallet at date first
-            todo!("filter FIAT not EUR");
-            let wallet = WalletDatabase::load(&trades_at_date);
-            let wallet_balance = self.wallet_balance(wallet);
-            debug!(
+            let trades_wno_eur = self.trades.select(
+                TradeQuery::default().asset_neq(Asset::Currency(Currency::Fiat(Fiat::Eur))),
+            );
+            let wallet = WalletDatabase::load(&trades_wno_eur);
+            let wallet_balance = self.wallet_balance(wallet)?;
+            info!(
                 "wallet balance at {} ({}): {}",
                 date,
                 date.ordinal(),
@@ -97,12 +103,22 @@ impl<'a> Taxes<'a> {
             // incr total balance, days and date
             date += chrono::Duration::days(1);
         }
-        (total_balance / Decimal::from(self.to.ordinal())).round_dp(2)
+        Ok(total_balance / Decimal::from(self.to.ordinal()))
     }
 
     /// Get wallet balance from wallet
-    fn wallet_balance(&self, wallet: WalletDatabase) -> Decimal {
-        todo!()
+    fn wallet_balance(&self, wallet: WalletDatabase) -> anyhow::Result<Decimal> {
+        let mut wallet_balance = Decimal::ZERO;
+        for (asset, quantity) in wallet.iter() {
+            let asset_price = match self.quotes.price(asset) {
+                Some(price) => price,
+                None => anyhow::bail!("could not find any price for asset {}", asset),
+            };
+            let asset_balance = *quantity * asset_price;
+            debug!("asset balance for {}: € {}", asset, asset_balance);
+            wallet_balance += asset_balance;
+        }
+        Ok(wallet_balance)
     }
 }
 
@@ -112,8 +128,6 @@ mod test {
     use super::*;
 
     use crate::mock::database::{DatabaseQuoteMock, DatabaseTradeMock, DatabaseWalletMock};
-
-    use chrono::prelude::*;
 
     #[test]
     fn should_init_taxes() {
@@ -129,7 +143,7 @@ mod test {
         let quotes = DatabaseQuoteMock::mock();
         let wallet = DatabaseWalletMock::mock();
         let tax = mocked(&trades, &quotes, &wallet);
-        assert_eq!(tax.ivafe(), dec!(18.88));
+        assert_eq!(tax.ivafe().unwrap(), dec!(18.88));
     }
 
     #[test]
@@ -138,7 +152,7 @@ mod test {
         let quotes = DatabaseQuoteMock::mock();
         let wallet = DatabaseWalletMock::mock();
         let tax = mocked(&trades, &quotes, &wallet);
-        assert_eq!(tax.average_balance(), dec!(9441.02));
+        assert_eq!(tax.average_balance().unwrap(), dec!(9441.02));
     }
 
     fn mocked<'a>(

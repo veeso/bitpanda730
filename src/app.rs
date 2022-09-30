@@ -12,6 +12,7 @@ use crate::{
 
 use chrono::prelude::*;
 use chrono::{DateTime, FixedOffset};
+use rust_decimal::Decimal;
 use spinners::{Spinner, Spinners};
 use std::convert::TryFrom;
 
@@ -56,19 +57,17 @@ impl TryFrom<Args> for App {
 
 impl App {
     /// Run application
-    pub fn run(mut self) -> anyhow::Result<()> {
+    pub fn run(self) -> anyhow::Result<()> {
         let quotes = self.load_quotes_database()?;
         debug!("quotes loaded");
         info!(
-            "current FIAT balance: €{}",
+            "current FIAT balance: € {}",
             self.trades.all().fiat_balance(Fiat::Eur)
         );
         debug!("taxes setup");
         let taxes = Taxes::new(&self.trades, &quotes, &self.wallet, self.since, self.to);
-        debug!("calculating IVAFE");
-        let ivafe = taxes.ivafe();
-        info!("IVAFE is: {}", ivafe);
-        todo!()
+        let ivafe = self.calc_ivafe(&taxes)?;
+        todo!("26%")
     }
 
     /// Load quotes database from trades
@@ -78,6 +77,15 @@ impl App {
         let quotes = QuoteDatabase::load(&self.trades, self.since, self.to)?;
         sp.stop();
         Ok(quotes)
+    }
+
+    fn calc_ivafe(&self, taxes: &Taxes) -> anyhow::Result<Decimal> {
+        debug!("calculating IVAFE");
+        let mut sp = Spinner::new(Spinners::Dots, "Calculating IVAFE...".to_string());
+        let ivafe = taxes.ivafe()?;
+        sp.stop();
+        info!("IVAFE is: € {}", ivafe);
+        Ok(ivafe)
     }
 }
 

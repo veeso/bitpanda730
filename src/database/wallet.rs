@@ -6,7 +6,7 @@ use super::TradeSet;
 use crate::bitpanda::trade::{Asset, AssetClass, InOut, Trade, TransactionType};
 
 use rust_decimal::Decimal;
-use std::collections::HashMap;
+use std::collections::{hash_map::Iter, HashMap};
 
 /// Contains all the assets detained by the user
 pub struct WalletDatabase {
@@ -21,7 +21,7 @@ impl WalletDatabase {
         debug!("loading {} assets", grouped_trades.len());
         let mut assets = HashMap::with_capacity(grouped_trades.len());
         for (asset, trades) in grouped_trades.into_iter() {
-            debug!("counting assets amount for {:?}", asset);
+            debug!("counting assets amount for {}", asset);
             assets.insert(asset, Self::count(&trades));
         }
 
@@ -31,6 +31,11 @@ impl WalletDatabase {
     /// Get balance for provided asset
     pub fn balance(&self, asset: &Asset) -> Option<Decimal> {
         self.assets.get(asset).cloned()
+    }
+
+    /// Get iterator over assets in wallet
+    pub fn iter(&self) -> Iter<'_, Asset, Decimal> {
+        self.assets.iter()
     }
 
     // -- private
@@ -55,12 +60,13 @@ impl WalletDatabase {
     /// Check whether asset in trade has increased in quantity, according to these rules:
     ///
     /// - the trade is FIAT and the direction is IN
-    /// - the transaction is BUY OR is INCOMING TRANSFER
+    /// - the transaction is BUY OR DEPOSIT OR is INCOMING TRANSFER
     fn has_asset_increased(trade: &Trade) -> bool {
         if trade.asset_class() == AssetClass::Fiat && trade.in_out() == InOut::Incoming {
             true
         } else {
             trade.transaction_type() == TransactionType::Buy
+                || trade.transaction_type() == TransactionType::Deposit
                 || (trade.transaction_type() == TransactionType::Transfer
                     && trade.in_out() == InOut::Incoming)
         }
@@ -69,12 +75,13 @@ impl WalletDatabase {
     /// Check whether asset in trade has decreased in quantity, according to these rules:
     ///
     /// - the trade is FIAT and the direction is OUT
-    /// - the transaction is SELL OR is OUTGOING TRANSFER
+    /// - the transaction is SELL OR WITHDRAWAL OR is OUTGOING TRANSFER
     fn has_asset_decreased(trade: &Trade) -> bool {
         if trade.asset_class() == AssetClass::Fiat && trade.in_out() == InOut::Outgoing {
             true
         } else {
             trade.transaction_type() == TransactionType::Sell
+                || trade.transaction_type() == TransactionType::Withdrawal
                 || (trade.transaction_type() == TransactionType::Transfer
                     && trade.in_out() == InOut::Outgoing)
         }

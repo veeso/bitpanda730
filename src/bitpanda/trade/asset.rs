@@ -4,6 +4,8 @@
 
 use super::{CryptoCurrency, Currency};
 
+use std::fmt;
+
 mod metal;
 
 pub use metal::Metal;
@@ -18,9 +20,9 @@ pub enum Asset {
     HongKong(i64),
 }
 
-impl ToString for Asset {
-    fn to_string(&self) -> String {
-        (match self {
+impl fmt::Display for Asset {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let repr = (match self {
             Self::Currency(Currency::Crypto(CryptoCurrency::OneInch)) => "1Inch".to_string(),
             Self::Currency(Currency::Crypto(x)) => format!("{:?}", x),
             Self::Currency(Currency::Fiat(x)) => format!("{:?}", x),
@@ -28,7 +30,8 @@ impl ToString for Asset {
             Self::Name(name) => name.to_string(),
             Self::HongKong(num) => num.to_string(),
         })
-        .to_uppercase()
+        .to_uppercase();
+        write!(f, "{}", repr)
     }
 }
 

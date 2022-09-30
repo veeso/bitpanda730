@@ -50,8 +50,8 @@ impl QuoteDatabase {
     }
 
     /// Get price for asset
-    pub fn price(&self, asset: Asset) -> Option<Decimal> {
-        self.quotes.get(&asset).cloned()
+    pub fn price(&self, asset: &Asset) -> Option<Decimal> {
+        self.quotes.get(asset).cloned()
     }
 
     // -- loaders
@@ -70,7 +70,7 @@ impl QuoteDatabase {
         debug!("getting assets price from Yahoo");
         for asset in assets.iter() {
             let symbol = YahooFinanceSymbols::lookup(asset);
-            debug!("got symbol {} for {:?}", symbol, asset);
+            debug!("got symbol {} for {}", symbol, asset);
             let quotation = yahoo_finance.get_symbol_quotes(&symbol)?;
             let price = quotation.price_at(price_at);
             debug!(
@@ -116,11 +116,19 @@ impl From<Vec<(Asset, AssetClass)>> for AssetsSortedByExchange {
     fn from(assets: Vec<(Asset, AssetClass)>) -> Self {
         let mut sorted_assets = Self::default();
         for (asset, class) in assets.into_iter() {
-            match class {
-                AssetClass::Commodity | AssetClass::Etf | AssetClass::Metal => {
+            match (asset, class) {
+                (Asset::Name(name), _) if &name == "RDSA" => {
+                    // Rdsa (SHELL) not on yahoo???
+                    sorted_assets.bitpanda.push(Asset::Name(name));
+                }
+                (Asset::Name(name), _) if &name == "3CP" => {
+                    // XIAOMI
+                    sorted_assets.bitpanda.push(Asset::Name(name));
+                }
+                (asset, AssetClass::Commodity | AssetClass::Etf | AssetClass::Metal) => {
                     sorted_assets.bitpanda.push(asset);
                 }
-                AssetClass::Fiat | AssetClass::Stock | AssetClass::Cryptocurrency => {
+                (asset, AssetClass::Fiat | AssetClass::Stock | AssetClass::Cryptocurrency) => {
                     sorted_assets.yahoo.push(asset);
                 }
             }
@@ -150,10 +158,10 @@ mod test {
         quotes.insert(Asset::Name(String::from("AMZN")), dec!(124.08));
         let db = QuoteDatabase { quotes };
         assert_eq!(
-            db.price(Asset::Name(String::from("AMZN"))).unwrap(),
+            db.price(&Asset::Name(String::from("AMZN"))).unwrap(),
             dec!(124.08)
         );
-        assert!(db.price(Asset::Name(String::from("ADBE"))).is_none());
+        assert!(db.price(&Asset::Name(String::from("ADBE"))).is_none());
     }
 
     fn date(year: i32, month: u32, day: u32) -> DateTime<FixedOffset> {

@@ -6,6 +6,7 @@ const API_BITPANDA_URL: &str = "https://api.bitpanda.com";
 
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
+use urlencoding;
 
 use super::{Quote, Quotes};
 use crate::bitpanda::trade::Asset;
@@ -27,7 +28,10 @@ impl BitpandaClient {
 
     /// Get symbols quotes
     pub fn get_symbols_quotes(&self, assets: &[Asset]) -> anyhow::Result<HashMap<Asset, Quotes>> {
-        let symbols: Vec<String> = assets.iter().map(|x| x.to_string()).collect();
+        let symbols: Vec<String> = assets
+            .iter()
+            .map(|x| urlencoding::encode(&x.to_string()).to_string())
+            .collect();
         let api_data = self.fetch_bitpanda_api(&symbols)?;
         let mut quotes = HashMap::with_capacity(symbols.len());
         // iter symbols to check whether all symbols are covered
@@ -87,6 +91,7 @@ mod test {
         let bitpanda = client();
         let assets = vec![
             Asset::Name(String::from("NASDAQ100")), // ETF
+            Asset::Name(String::from("S&P500")),    // ETF with strange name
             Asset::Name(String::from("NATGAS")),    // Commodity
             Asset::Metal(Metal::Gold),              // Metal
             Asset::Name(String::from("AMZN")),      // Stock
@@ -96,10 +101,11 @@ mod test {
         ];
         // fetch
         let quotes = bitpanda.get_symbols_quotes(&assets).unwrap();
-        assert_eq!(quotes.len(), 7);
+        assert_eq!(quotes.len(), 8);
         assert!(quotes
             .get(&Asset::Name(String::from("NASDAQ100")))
             .is_some());
+        assert!(quotes.get(&Asset::Name(String::from("S&P500"))).is_some());
         assert!(quotes.get(&Asset::Name(String::from("NATGAS"))).is_some());
         assert!(quotes.get(&Asset::Metal(Metal::Gold)).is_some());
         assert!(quotes.get(&Asset::Name(String::from("AMZN"))).is_some());
