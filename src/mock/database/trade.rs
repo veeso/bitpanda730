@@ -137,4 +137,73 @@ impl DatabaseTradeMock {
             ),
         ])
     }
+
+    pub fn google_stock_split_mock() -> TradeDatabase {
+        TradeDatabase::from(vec![
+            TradeGenerator::buy(
+                DateTime::from_str("2022-07-02T12:32:24Z").unwrap(),
+                dec!(60.01),
+                Fiat::Eur,
+                dec!(0.02863967),
+                Asset::Name(String::from("GOOGL")),
+                AssetClass::Stock,
+                dec!(2095.35),
+            ),
+            TradeGenerator::buy(
+                DateTime::from_str("2022-07-02T13:32:24Z").unwrap(),
+                dec!(150.00),
+                Fiat::Eur,
+                dec!(0.07170714),
+                Asset::Name(String::from("GOOGL")),
+                AssetClass::Stock,
+                dec!(2091.84),
+            ),
+            TradeGenerator::transfer(
+                DateTime::from_str("2022-07-17T13:32:24Z").unwrap(),
+                InOut::Incoming,
+                dec!(4214.52),
+                Fiat::Eur,
+                dec!(1.90658939),
+                Asset::Name(String::from("GOOGL")),
+                AssetClass::Stock,
+                dec!(2210.50),
+            ),
+            TradeGenerator::sell(
+                DateTime::from_str("2022-08-02T13:32:24Z").unwrap(),
+                dec!(112.82),
+                Fiat::Eur,
+                dec!(1.01894380),
+                Asset::Name(String::from("GOOGL")),
+                AssetClass::Stock,
+                dec!(110.72),
+            ),
+            TradeGenerator::buy(
+                DateTime::from_str("2022-08-02T13:32:24Z").unwrap(),
+                dec!(1.34),
+                Fiat::Eur,
+                dec!(0.01210000),
+                Asset::Name(String::from("GOOGL")),
+                AssetClass::Stock,
+                dec!(110.74),
+            ),
+            TradeGenerator::sell(
+                DateTime::from_str("2022-08-08T13:32:24Z").unwrap(),
+                dec!(81.39),
+                Fiat::Eur,
+                dec!(0.70360841),
+                Asset::Name(String::from("GOOGL")),
+                AssetClass::Stock,
+                dec!(115.68),
+            ),
+            TradeGenerator::sell(
+                DateTime::from_str("2022-08-08T13:32:24Z").unwrap(),
+                dec!(34.30),
+                Fiat::Eur,
+                dec!(0.29648399),
+                Asset::Name(String::from("GOOGL")),
+                AssetClass::Stock,
+                dec!(115.69),
+            ),
+        ])
+    }
 }

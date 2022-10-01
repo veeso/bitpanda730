@@ -5,7 +5,7 @@
 use crate::{
     args::Args,
     bitpanda::{trade::Fiat, Trade},
-    database::{QuoteDatabase, TradeDatabase, WalletDatabase},
+    database::{QuoteDatabase, TradeDatabase},
     parser::BitpandaTradeParser,
     tax::{GainsAndLosses, Taxes},
 };
@@ -19,7 +19,6 @@ use std::convert::TryFrom;
 /// Application container
 pub struct App {
     trades: TradeDatabase,
-    wallet: WalletDatabase,
     since: DateTime<FixedOffset>,
     to: DateTime<FixedOffset>,
 }
@@ -46,12 +45,7 @@ impl TryFrom<Args> for App {
             .collect();
         info!("working on a total amount of {} trades", trades.len());
         let trades = TradeDatabase::from(trades);
-        Ok(App {
-            wallet: WalletDatabase::load(&trades.all()),
-            trades,
-            since,
-            to,
-        })
+        Ok(App { trades, since, to })
     }
 }
 
@@ -65,7 +59,7 @@ impl App {
             self.trades.all().fiat_balance(Fiat::Eur)
         );
         debug!("taxes setup");
-        let taxes = Taxes::new(&self.trades, &quotes, &self.wallet, self.since, self.to);
+        let taxes = Taxes::new(&self.trades, &quotes, self.since, self.to);
         let ivafe = self.calc_ivafe(&taxes)?;
         info!("IVAFE is: € {}", ivafe);
         let capitals_diff = self.calc_gains_and_losses(&taxes)?;

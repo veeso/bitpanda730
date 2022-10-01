@@ -2,11 +2,14 @@
 //!
 //! This module exposes the gains and losees type
 
+use rust_decimal::Decimal;
 use std::slice::Iter;
 
-use rust_decimal::Decimal;
+mod calculator;
+mod capital_diff;
 
-use crate::bitpanda::trade::Asset;
+pub use calculator::Calculator;
+pub use capital_diff::CapitalDiff;
 
 /// Gains and losses contains the different capital gains and losees calculated.
 /// Taxes, assets and original amounts are stored
@@ -15,25 +18,10 @@ pub struct GainsAndLosses {
     capitals: Vec<CapitalDiff>,
 }
 
-/// Capital diff defines a gain or a loss in the investor's capital
-#[derive(Debug)]
-pub struct CapitalDiff {
-    /// Defines whether the capital diff is a gain or a loss
-    diff: Diff,
-    /// The asset the capital diff is referred to
-    asset: Asset,
-    /// The tax value applied
-    tax: Decimal,
-    /// The percentage applied to `value` to calculate the tax
-    tax_percentage: Decimal,
-    /// The value of the capital difference (if positive is a gain, if negative is a loss)
-    value: Decimal,
-}
-
-#[derive(Debug, Eq, PartialEq)]
-enum Diff {
-    Gain,
-    Loss,
+impl From<Vec<CapitalDiff>> for GainsAndLosses {
+    fn from(capitals: Vec<CapitalDiff>) -> Self {
+        Self { capitals }
+    }
 }
 
 impl GainsAndLosses {
@@ -66,71 +54,37 @@ impl GainsAndLosses {
     }
 }
 
-impl CapitalDiff {
-    /// Construct a Gain capital diff
-    pub fn gain(asset: Asset, tax_percentage: Decimal, value: Decimal) -> Self {
-        assert!(tax_percentage >= Decimal::ZERO && tax_percentage <= dec!(100.0));
-        let tax = value * (tax_percentage / dec!(100.0)).round_dp(2);
-        Self {
-            diff: Diff::Gain,
-            asset,
-            tax,
-            tax_percentage,
-            value,
-        }
-    }
-
-    /// Construct a Loss capital diff
-    pub fn loss(asset: Asset, value: Decimal) -> Self {
-        Self {
-            diff: Diff::Loss,
-            asset,
-            tax: Decimal::ZERO,
-            tax_percentage: Decimal::ZERO,
-            value,
-        }
-    }
-
-    /// Returns whether this capital diff is a gain
-    pub fn is_gain(&self) -> bool {
-        self.diff == Diff::Gain
-    }
-
-    /// Returns whether this capital diff is a loss
-    pub fn is_loss(&self) -> bool {
-        self.diff == Diff::Loss
-    }
-
-    /// The asset associated to the gain/loss
-    pub fn asset(&self) -> &Asset {
-        &self.asset
-    }
-
-    /// The tax which must be paid on capital difference
-    pub fn tax(&self) -> Decimal {
-        self.tax
-    }
-
-    /// The tax percentage applied
-    pub fn tax_percentage(&self) -> Decimal {
-        self.tax_percentage
-    }
-
-    /// Returns the value of the gain or of the loss
-    pub fn value(&self) -> Decimal {
-        self.value
-    }
-}
-
 #[cfg(test)]
 mod test {
 
     use super::*;
+    use crate::bitpanda::trade::{Asset, Metal};
 
     use pretty_assertions::assert_eq;
 
     #[test]
     fn should_init_gains_and_losses() {
-        todo!()
+        let gain_and_losses = GainsAndLosses::from(vec![
+            CapitalDiff::gain(Asset::Metal(Metal::Gold), dec!(26.0), dec!(500.0)),
+            CapitalDiff::gain(Asset::Metal(Metal::Palladium), dec!(11.0), dec!(100.0)),
+            CapitalDiff::gain(Asset::Metal(Metal::Silver), dec!(50.0), dec!(600.0)),
+            CapitalDiff::loss(Asset::Name(String::from("TSLA")), dec!(32.0)),
+            CapitalDiff::loss(Asset::Name(String::from("NASDAQ100")), dec!(400.0)),
+        ]);
+        assert_eq!(gain_and_losses.capitals.len(), 5);
+    }
+
+    #[test]
+    fn should_calc_gains_and_losses() {
+        let gain_and_losses = GainsAndLosses::from(vec![
+            CapitalDiff::gain(Asset::Metal(Metal::Gold), dec!(26.0), dec!(500.0)),
+            CapitalDiff::gain(Asset::Metal(Metal::Palladium), dec!(11.0), dec!(100.0)),
+            CapitalDiff::gain(Asset::Metal(Metal::Silver), dec!(50.0), dec!(600.0)),
+            CapitalDiff::loss(Asset::Name(String::from("TSLA")), dec!(32.0)),
+            CapitalDiff::loss(Asset::Name(String::from("NASDAQ100")), dec!(400.0)),
+        ]);
+        assert_eq!(gain_and_losses.gains_value(), dec!(1200.0));
+        assert_eq!(gain_and_losses.losses_value(), dec!(432.0));
+        assert_eq!(gain_and_losses.tax_to_pay(), dec!(441.0));
     }
 }

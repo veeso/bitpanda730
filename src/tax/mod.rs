@@ -3,7 +3,7 @@
 //! This module expose the tax calculators for Italian taxation ruleset
 
 mod gains_and_losses;
-pub use gains_and_losses::GainsAndLosses;
+pub use gains_and_losses::{Calculator as GainsAndLossesCalculator, GainsAndLosses};
 
 use crate::bitpanda::trade::{Asset, Currency, Fiat};
 use crate::database::{QuoteDatabase, TradeDatabase, TradeQuery, WalletDatabase};
@@ -21,7 +21,6 @@ use rust_decimal::Decimal;
 pub struct Taxes<'a> {
     trades: &'a TradeDatabase,
     quotes: &'a QuoteDatabase,
-    wallet: &'a WalletDatabase,
     since: DateTime<FixedOffset>,
     to: DateTime<FixedOffset>,
 }
@@ -30,14 +29,13 @@ impl<'a> Taxes<'a> {
     pub fn new(
         trades: &'a TradeDatabase,
         quotes: &'a QuoteDatabase,
-        wallet: &'a WalletDatabase,
+
         since: DateTime<FixedOffset>,
         to: DateTime<FixedOffset>,
     ) -> Self {
         Self {
             trades,
             quotes,
-            wallet,
             since,
             to,
         }
@@ -69,7 +67,8 @@ impl<'a> Taxes<'a> {
     /// > plusvalenze: reddito dovuto alla vendita a un prezzo superiore di quello di acquisto, ossia un guadagno
     /// > minusvalenze: controvalore derivante dalla vendita di uno strumento finanziario a un prezzo inferiore rispetto a quello d’acquisto, ossia una perdita
     pub fn capital_gains_and_losses(&self) -> anyhow::Result<GainsAndLosses> {
-        todo!()
+        let mut calculator = GainsAndLossesCalculator::default();
+        calculator.calculate(self.trades)
     }
 
     /// Calculate the average balance along the year
@@ -138,22 +137,20 @@ mod test {
 
     use super::*;
 
-    use crate::mock::database::{DatabaseQuoteMock, DatabaseTradeMock, DatabaseWalletMock};
+    use crate::mock::database::{DatabaseQuoteMock, DatabaseTradeMock};
 
     #[test]
     fn should_init_taxes() {
         let trades = DatabaseTradeMock::mock();
         let quotes = DatabaseQuoteMock::mock();
-        let wallet = DatabaseWalletMock::mock();
-        let _ = mocked(&trades, &quotes, &wallet);
+        let _ = mocked(&trades, &quotes);
     }
 
     #[test]
     fn should_calc_ivafe() {
         let trades = DatabaseTradeMock::mock();
         let quotes = DatabaseQuoteMock::mock();
-        let wallet = DatabaseWalletMock::mock();
-        let tax = mocked(&trades, &quotes, &wallet);
+        let tax = mocked(&trades, &quotes);
         assert_eq!(tax.ivafe().unwrap(), dec!(19.47));
     }
 
@@ -161,8 +158,7 @@ mod test {
     fn should_return_ivafe_0_if_below_5000() {
         let trades = TradeDatabase::from(vec![]);
         let quotes = DatabaseQuoteMock::mock();
-        let wallet = WalletDatabase::load(&trades.all());
-        let tax = mocked(&trades, &quotes, &wallet);
+        let tax = mocked(&trades, &quotes);
         assert_eq!(tax.ivafe().unwrap(), Decimal::ZERO);
     }
 
@@ -170,20 +166,15 @@ mod test {
     fn should_calc_average_balance() {
         let trades = DatabaseTradeMock::mock();
         let quotes = DatabaseQuoteMock::mock();
-        let wallet = DatabaseWalletMock::mock();
-        let tax = mocked(&trades, &quotes, &wallet);
+        let tax = mocked(&trades, &quotes);
         assert_eq!(tax.average_balance().unwrap().round_dp(2), dec!(9736.96));
     }
 
-    fn mocked<'a>(
-        trades: &'a TradeDatabase,
-        quotes: &'a QuoteDatabase,
-        wallet: &'a WalletDatabase,
-    ) -> Taxes<'a> {
+    fn mocked<'a>(trades: &'a TradeDatabase, quotes: &'a QuoteDatabase) -> Taxes<'a> {
         let since = FixedOffset::east(3600).ymd(2022, 1, 1).and_hms(0, 0, 0);
         let to = FixedOffset::east(3600)
             .ymd(2022, 12, 31)
             .and_hms(23, 59, 59);
-        Taxes::new(trades, quotes, wallet, since, to)
+        Taxes::new(trades, quotes, since, to)
     }
 }

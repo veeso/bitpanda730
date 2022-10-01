@@ -29,6 +29,7 @@ impl WalletDatabase {
     }
 
     /// Get balance for provided asset
+    #[allow(dead_code)]
     pub fn balance(&self, asset: &Asset) -> Option<Decimal> {
         self.assets.get(asset).cloned()
     }
