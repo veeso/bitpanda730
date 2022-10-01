@@ -34,7 +34,9 @@ impl Calculator {
                 stonks.push(capital_diff);
             }
         }
-        Ok(GainsAndLosses::from(stonks))
+        let mut stonks = GainsAndLosses::from(stonks);
+        stonks.flatten();
+        Ok(stonks)
     }
 
     /// Update wallet using trade.

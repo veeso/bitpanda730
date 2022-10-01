@@ -30,6 +30,11 @@ impl GainsAndLosses {
         self.capitals.iter()
     }
 
+    /// Group gains and losses by the same assets and create a unique capital diff for them
+    pub fn flatten(&mut self) {
+        todo!();
+    }
+
     /// Get the amount (value) of gains
     pub fn gains_value(&self) -> Decimal {
         self.capitals
