@@ -135,7 +135,7 @@ impl Default for TradeBuilder {
             amount_fiat: dec!(0.0),
             fiat: Fiat::Eur,
             amount_asset: CsvOption::none(),
-            asset: Asset::Name("AMZN".to_string()),
+            asset: Asset::Ticker("AMZN".to_string()),
             asset_market_price: CsvOption::none(),
             asset_market_price_currency: CsvOption::none(),
             asset_class: AssetClass::Stock,

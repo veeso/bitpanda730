@@ -90,12 +90,12 @@ mod test {
     fn should_get_quotes_for_symbols() {
         let bitpanda = client();
         let assets = vec![
-            Asset::Name(String::from("NASDAQ100")), // ETF
-            Asset::Name(String::from("S&P500")),    // ETF with strange name
-            Asset::Name(String::from("NATGAS")),    // Commodity
-            Asset::Metal(Metal::Gold),              // Metal
-            Asset::Name(String::from("AMZN")),      // Stock
-            Asset::HongKong(1177),                  // Stock hong kong
+            Asset::Ticker(String::from("NASDAQ100")), // ETF
+            Asset::Ticker(String::from("S&P500")),    // ETF with strange name
+            Asset::Ticker(String::from("NATGAS")),    // Commodity
+            Asset::Metal(Metal::Gold),                // Metal
+            Asset::Ticker(String::from("AMZN")),      // Stock
+            Asset::HongKong(1177),                    // Stock hong kong
             Asset::Currency(Currency::Crypto(CryptoCurrency::OneInch)), // Crypto
             Asset::Currency(Currency::Crypto(CryptoCurrency::Sushi)), // Crypto
         ];
@@ -103,12 +103,12 @@ mod test {
         let quotes = bitpanda.get_symbols_quotes(&assets).unwrap();
         assert_eq!(quotes.len(), 8);
         assert!(quotes
-            .get(&Asset::Name(String::from("NASDAQ100")))
+            .get(&Asset::Ticker(String::from("NASDAQ100")))
             .is_some());
-        assert!(quotes.get(&Asset::Name(String::from("S&P500"))).is_some());
-        assert!(quotes.get(&Asset::Name(String::from("NATGAS"))).is_some());
+        assert!(quotes.get(&Asset::Ticker(String::from("S&P500"))).is_some());
+        assert!(quotes.get(&Asset::Ticker(String::from("NATGAS"))).is_some());
         assert!(quotes.get(&Asset::Metal(Metal::Gold)).is_some());
-        assert!(quotes.get(&Asset::Name(String::from("AMZN"))).is_some());
+        assert!(quotes.get(&Asset::Ticker(String::from("AMZN"))).is_some());
         assert!(quotes.get(&Asset::HongKong(1177)).is_some());
         assert!(quotes
             .get(&Asset::Currency(Currency::Crypto(CryptoCurrency::OneInch)))
@@ -121,7 +121,7 @@ mod test {
     #[test]
     fn should_fail_get_quotes_for_unexisting_symbol() {
         let bitpanda = client();
-        let assets = vec![Asset::Name(String::from("SOLARIUDINE"))];
+        let assets = vec![Asset::Ticker(String::from("SOLARIUDINE"))];
         assert!(bitpanda.get_symbols_quotes(&assets).is_err());
     }
 

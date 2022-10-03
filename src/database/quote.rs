@@ -117,13 +117,13 @@ impl From<Vec<(Asset, AssetClass)>> for AssetsSortedByExchange {
         let mut sorted_assets = Self::default();
         for (asset, class) in assets.into_iter() {
             match (asset, class) {
-                (Asset::Name(name), _) if &name == "RDSA" => {
+                (Asset::Ticker(name), _) if &name == "RDSA" => {
                     // Rdsa (SHELL) not on yahoo???
-                    sorted_assets.bitpanda.push(Asset::Name(name));
+                    sorted_assets.bitpanda.push(Asset::Ticker(name));
                 }
-                (Asset::Name(name), _) if &name == "3CP" => {
+                (Asset::Ticker(name), _) if &name == "3CP" => {
                     // XIAOMI
-                    sorted_assets.bitpanda.push(Asset::Name(name));
+                    sorted_assets.bitpanda.push(Asset::Ticker(name));
                 }
                 (asset, AssetClass::Commodity | AssetClass::Etf | AssetClass::Metal) => {
                     sorted_assets.bitpanda.push(asset);
@@ -155,13 +155,13 @@ mod test {
     #[test]
     fn should_get_price() {
         let mut quotes = HashMap::new();
-        quotes.insert(Asset::Name(String::from("AMZN")), dec!(124.08));
+        quotes.insert(Asset::Ticker(String::from("AMZN")), dec!(124.08));
         let db = QuoteDatabase { quotes };
         assert_eq!(
-            db.price(&Asset::Name(String::from("AMZN"))).unwrap(),
+            db.price(&Asset::Ticker(String::from("AMZN"))).unwrap(),
             dec!(124.08)
         );
-        assert!(db.price(&Asset::Name(String::from("ADBE"))).is_none());
+        assert!(db.price(&Asset::Ticker(String::from("ADBE"))).is_none());
     }
 
     fn date(year: i32, month: u32, day: u32) -> DateTime<FixedOffset> {

@@ -231,7 +231,7 @@ impl YahooFinanceSymbols {
             Asset::Currency(Currency::Fiat(Fiat::Try)) => "USDTRY=x".to_string(),
             Asset::Currency(Currency::Fiat(Fiat::Usd)) => "USDT-USD".to_string(),
             Asset::Metal(metal) => metal.to_string(),
-            Asset::Name(name) => name.to_string(),
+            Asset::Ticker(name) => name.to_string(),
             Asset::HongKong(id) => format!("{}.HK", id),
         }
     }
@@ -251,7 +251,7 @@ mod test {
             "BTC-USD"
         );
         assert_eq!(
-            YahooFinanceSymbols::lookup(&Asset::Name(String::from("AMZN"))).as_str(),
+            YahooFinanceSymbols::lookup(&Asset::Ticker(String::from("AMZN"))).as_str(),
             "AMZN"
         );
         assert_eq!(

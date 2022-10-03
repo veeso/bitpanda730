@@ -120,7 +120,7 @@ mod test {
         let trades = DatabaseTradeMock::mock();
         let db = WalletDatabase::load(&trades.all());
         assert_eq!(
-            db.balance(&Asset::Name(String::from("AMZN"))).unwrap(),
+            db.balance(&Asset::Ticker(String::from("AMZN"))).unwrap(),
             dec!(1.0)
         );
     }

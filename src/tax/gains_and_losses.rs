@@ -133,8 +133,8 @@ mod test {
             CapitalDiff::gain(Asset::Metal(Metal::Gold), dec!(26.0), dec!(500.0)),
             CapitalDiff::gain(Asset::Metal(Metal::Palladium), dec!(11.0), dec!(100.0)),
             CapitalDiff::gain(Asset::Metal(Metal::Silver), dec!(50.0), dec!(600.0)),
-            CapitalDiff::loss(Asset::Name(String::from("TSLA")), dec!(-32.0)),
-            CapitalDiff::loss(Asset::Name(String::from("NASDAQ100")), dec!(-400.0)),
+            CapitalDiff::loss(Asset::Ticker(String::from("TSLA")), dec!(-32.0)),
+            CapitalDiff::loss(Asset::Ticker(String::from("NASDAQ100")), dec!(-400.0)),
         ]);
         assert_eq!(gain_and_losses.capitals.len(), 5);
     }
@@ -145,8 +145,8 @@ mod test {
             CapitalDiff::gain(Asset::Metal(Metal::Gold), dec!(26.0), dec!(500.0)),
             CapitalDiff::gain(Asset::Metal(Metal::Palladium), dec!(11.0), dec!(100.0)),
             CapitalDiff::gain(Asset::Metal(Metal::Silver), dec!(50.0), dec!(600.0)),
-            CapitalDiff::loss(Asset::Name(String::from("TSLA")), dec!(-32.0)),
-            CapitalDiff::loss(Asset::Name(String::from("NASDAQ100")), dec!(-400.0)),
+            CapitalDiff::loss(Asset::Ticker(String::from("TSLA")), dec!(-32.0)),
+            CapitalDiff::loss(Asset::Ticker(String::from("NASDAQ100")), dec!(-400.0)),
         ]);
         assert_eq!(gain_and_losses.gains_value(), dec!(1200.0));
         assert_eq!(gain_and_losses.losses_value(), dec!(-432.0));

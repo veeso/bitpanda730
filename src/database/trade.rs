@@ -58,7 +58,7 @@ mod test {
         assert_eq!(groups.len(), 9);
         assert_eq!(
             groups
-                .get(&Asset::Name(String::from("AMZN")))
+                .get(&Asset::Ticker(String::from("AMZN")))
                 .unwrap()
                 .len(),
             2

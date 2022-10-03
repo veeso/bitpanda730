@@ -16,7 +16,9 @@ pub use metal::Metal;
 pub enum Asset {
     Currency(Currency),
     Metal(Metal),
-    Name(String),
+    /// A symbol name
+    Ticker(String),
+    /// Hong kong stock identifier
     HongKong(i64),
 }
 
@@ -27,7 +29,7 @@ impl fmt::Display for Asset {
             Self::Currency(Currency::Crypto(x)) => format!("{:?}", x),
             Self::Currency(Currency::Fiat(x)) => format!("{:?}", x),
             Self::Metal(metal) => metal.to_string(),
-            Self::Name(name) => name.to_string(),
+            Self::Ticker(name) => name.to_string(),
             Self::HongKong(num) => num.to_string(),
         })
         .to_uppercase();
@@ -47,7 +49,7 @@ mod test {
     #[test]
     fn should_convert_asset_to_string() {
         assert_eq!(
-            Asset::Name(String::from("AMZN")).to_string().as_str(),
+            Asset::Ticker(String::from("AMZN")).to_string().as_str(),
             "AMZN"
         );
         assert_eq!(Asset::HongKong(1197).to_string().as_str(), "1197");
@@ -95,7 +97,7 @@ mod test {
             vec![
                 Asset::Currency(Currency::Fiat(Fiat::Eur)),
                 Asset::Currency(Currency::Crypto(CryptoCurrency::Btc)),
-                Asset::Name("TSLA".to_string()),
+                Asset::Ticker("TSLA".to_string()),
                 Asset::Metal(Metal::Gold),
                 Asset::HongKong(1177),
             ]
