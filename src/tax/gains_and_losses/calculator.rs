@@ -34,9 +34,8 @@ impl Calculator {
                 stonks.push(capital_diff);
             }
         }
-        let mut stonks = GainsAndLosses::from(stonks);
-        stonks.flatten();
-        Ok(stonks)
+
+        Ok(GainsAndLosses::from(stonks).flatten())
     }
 
     /// Update wallet using trade.
@@ -93,7 +92,7 @@ impl Calculator {
                 trade.amount_fiat(),
                 capital_diff
             );
-            Ok(Some(self.calc_capital_diff(capital_diff, trade)))
+            Ok(self.calc_capital_diff(capital_diff, trade))
         } else {
             info!("ignoring capital diff for withdrawal ({})", trade.asset());
             Ok(None)
@@ -114,11 +113,17 @@ impl Calculator {
     }
 
     /// Calculate capital diff from trade and diff amount
-    fn calc_capital_diff(&self, diff: Decimal, trade: &Trade) -> CapitalDiff {
-        if diff.is_sign_negative() {
-            CapitalDiff::loss(trade.asset(), diff.abs())
+    fn calc_capital_diff(&self, diff: Decimal, trade: &Trade) -> Option<CapitalDiff> {
+        if diff.is_zero() {
+            None
+        } else if diff.is_sign_negative() {
+            Some(CapitalDiff::loss(trade.asset(), diff))
         } else {
-            CapitalDiff::gain(trade.asset(), self.tax_percentage(trade.asset()), diff)
+            Some(CapitalDiff::gain(
+                trade.asset(),
+                self.tax_percentage(trade.asset()),
+                diff,
+            ))
         }
     }
 
@@ -153,7 +158,7 @@ mod test {
         let mut calculator = Calculator::default();
         let gains_and_losses = calculator.calculate(&db).unwrap();
         assert_eq!(gains_and_losses.gains_value().round_dp(2), dec!(159.21));
-        assert_eq!(gains_and_losses.losses_value().round_dp(2), dec!(308.21));
+        assert_eq!(gains_and_losses.losses_value().round_dp(2), dec!(-308.21));
         assert_eq!(gains_and_losses.tax_to_pay().round_dp(2), dec!(41.40));
         assert_eq!(gains_and_losses.iter().len(), 4);
     }

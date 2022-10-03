@@ -67,7 +67,7 @@ impl App {
             "gains: € {}; losses: € {}; diff: € {}; total taxes to pay: € {}",
             capitals_diff.gains_value(),
             capitals_diff.losses_value(),
-            capitals_diff.gains_value() - capitals_diff.losses_value(),
+            capitals_diff.gains_value() + capitals_diff.losses_value(),
             capitals_diff.tax_to_pay()
         );
         todo!("repr output")

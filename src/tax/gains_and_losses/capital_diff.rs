@@ -5,7 +5,7 @@ use rust_decimal::Decimal;
 use crate::bitpanda::trade::Asset;
 
 /// Capital diff defines a gain or a loss in the investor's capital
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CapitalDiff {
     /// Defines whether the capital diff is a gain or a loss
     diff: Diff,
@@ -19,7 +19,7 @@ pub struct CapitalDiff {
     value: Decimal,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, Copy, Clone, PartialEq)]
 enum Diff {
     Gain,
     Loss,
@@ -29,6 +29,7 @@ impl CapitalDiff {
     /// Construct a Gain capital diff
     pub fn gain(asset: Asset, tax_percentage: Decimal, value: Decimal) -> Self {
         assert!(tax_percentage >= Decimal::ZERO && tax_percentage <= dec!(100.0));
+        assert!(value.is_sign_positive());
         let tax = value * (tax_percentage / dec!(100.0)).round_dp(2);
         Self {
             diff: Diff::Gain,
@@ -41,6 +42,7 @@ impl CapitalDiff {
 
     /// Construct a Loss capital diff
     pub fn loss(asset: Asset, value: Decimal) -> Self {
+        assert!(value.is_sign_negative());
         Self {
             diff: Diff::Loss,
             asset,
@@ -114,11 +116,11 @@ mod test {
 
     #[test]
     fn should_init_loss() {
-        let loss = CapitalDiff::loss(Asset::Metal(Metal::Gold), dec!(56.0));
+        let loss = CapitalDiff::loss(Asset::Metal(Metal::Gold), dec!(-56.0));
         assert_eq!(loss.is_loss(), true);
         assert_eq!(loss.is_gain(), false);
         assert_eq!(loss.tax(), Decimal::ZERO);
         assert_eq!(loss.tax_percentage(), Decimal::ZERO);
-        assert_eq!(loss.value(), dec!(56.0));
+        assert_eq!(loss.value(), dec!(-56.0));
     }
 }

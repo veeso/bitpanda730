@@ -4,7 +4,7 @@
 use chrono::{DateTime, FixedOffset};
 
 use super::{Trade, TradeSet};
-use crate::bitpanda::trade::{Asset, TransactionType};
+use crate::bitpanda::trade::Asset;
 
 /// Query statement for trade
 #[derive(Default, Debug)]
@@ -36,12 +36,6 @@ impl Query {
         self
     }
 
-    /// Select only trades which transaction type is included in `types`
-    pub fn has_transaction_type(mut self, types: Vec<TransactionType>) -> Self {
-        self.filters.push(QueryFilter::TransactionTypes(types));
-        self
-    }
-
     /// apply filters for trade
     fn filter(&self, trade: &Trade) -> bool {
         for filter in self.filters.iter() {
@@ -59,7 +53,6 @@ pub enum QueryFilter {
     AssetNeq(Asset),
     DateTimeAfter(DateTime<FixedOffset>),
     DateTimeBefore(DateTime<FixedOffset>),
-    TransactionTypes(Vec<TransactionType>),
 }
 
 impl QueryFilter {
@@ -68,7 +61,6 @@ impl QueryFilter {
             Self::DateTimeAfter(date) => trade.timestamp() >= *date,
             Self::DateTimeBefore(date) => trade.timestamp() <= *date,
             Self::AssetNeq(asset) => trade.asset() != *asset,
-            Self::TransactionTypes(types) => types.contains(&trade.transaction_type()),
         }
     }
 }
@@ -99,14 +91,5 @@ mod test {
 
         let query = Query::default().asset_neq(Asset::Currency(Currency::Fiat(Fiat::Eur)));
         assert_eq!(query.select(&db.trades).trades().len(), 13);
-    }
-
-    #[test]
-    fn should_query_by_transaction_type() {
-        let db = DatabaseTradeMock::mock();
-
-        let query = Query::default()
-            .has_transaction_type(vec![TransactionType::Buy, TransactionType::Sell]);
-        assert_eq!(query.select(&db.trades).trades().len(), 11);
     }
 }
