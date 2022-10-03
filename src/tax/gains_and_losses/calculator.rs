@@ -2,6 +2,7 @@
 //!
 //! Gains and losses calculator
 
+mod ticker_whitelist;
 mod wallet;
 
 use rust_decimal::Decimal;
@@ -11,6 +12,8 @@ use super::{CapitalDiff, GainsAndLosses};
 use crate::database::TradeDatabase;
 use bitpanda_csv::Trade;
 use bitpanda_csv::{Asset, InOut, TransactionType};
+
+use ticker_whitelist::TickerWhitelist;
 use wallet::Wallet;
 
 /// Gains and losses calculator from trades
@@ -117,10 +120,11 @@ impl Calculator {
         if diff.is_zero() {
             None
         } else if diff.is_sign_negative() {
-            Some(CapitalDiff::loss(trade.asset(), diff))
+            Some(CapitalDiff::loss(trade.asset(), trade.asset_class(), diff))
         } else {
             Some(CapitalDiff::gain(
                 trade.asset(),
+                trade.asset_class(),
                 self.tax_percentage(trade.asset()),
                 diff,
             ))
@@ -129,7 +133,11 @@ impl Calculator {
 
     /// Return the tax percentage to apply to trade asset
     fn tax_percentage(&self, asset: Asset) -> Decimal {
-        dec!(26.0)
+        match asset {
+            Asset::Currency(_) | Asset::Metal(_) | Asset::HongKong(_) => dec!(26.0),
+            Asset::Ticker(ticker) if TickerWhitelist::is_whitelisted(&ticker) => dec!(12.50),
+            Asset::Ticker(_) => dec!(26.0),
+        }
     }
 
     /// Get wallet for asset.
@@ -150,6 +158,7 @@ mod test {
     use super::*;
     use crate::mock::database::DatabaseTradeMock;
 
+    use bitpanda_csv::{CryptoCurrency, Currency, Metal};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -170,5 +179,27 @@ mod test {
         let gains_and_losses = calculator.calculate(&db).unwrap();
         assert_eq!(gains_and_losses.losses_value(), Decimal::ZERO);
         assert_eq!(gains_and_losses.gains_value().round_dp(2), dec!(17.16));
+    }
+
+    #[test]
+    fn should_tell_tax_percentage() {
+        let calculator = Calculator::default();
+        assert_eq!(
+            calculator.tax_percentage(Asset::Metal(Metal::Gold)),
+            dec!(26.0)
+        );
+        assert_eq!(
+            calculator.tax_percentage(Asset::Currency(Currency::Crypto(CryptoCurrency::Btc))),
+            dec!(26.0)
+        );
+        assert_eq!(calculator.tax_percentage(Asset::HongKong(1177)), dec!(26.0));
+        assert_eq!(
+            calculator.tax_percentage(Asset::Ticker(String::from("USGOVIES"))),
+            dec!(12.50)
+        );
+        assert_eq!(
+            calculator.tax_percentage(Asset::Ticker(String::from("AMZN"))),
+            dec!(26.0)
+        );
     }
 }

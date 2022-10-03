@@ -97,6 +97,11 @@ impl GainsAndLosses {
             .next()
             .unwrap()
             .clone();
+        let asset_class = capitals_diff
+            .iter()
+            .map(|x| x.asset_class())
+            .next()
+            .unwrap();
         let total_value: Decimal = capitals_diff.iter().map(|x| x.value()).sum();
         debug!(
             "flattening capital diffs of {}; total value: {}",
@@ -112,9 +117,14 @@ impl GainsAndLosses {
                 .map(|x| x.tax_percentage())
                 .max()
                 .unwrap();
-            Some(CapitalDiff::gain(asset, tax_percentage, total_value))
+            Some(CapitalDiff::gain(
+                asset,
+                asset_class,
+                tax_percentage,
+                total_value,
+            ))
         } else {
-            Some(CapitalDiff::loss(asset, total_value))
+            Some(CapitalDiff::loss(asset, asset_class, total_value))
         }
     }
 }
@@ -123,18 +133,41 @@ impl GainsAndLosses {
 mod test {
 
     use super::*;
-    use bitpanda_csv::{Asset, Metal};
+    use bitpanda_csv::{Asset, AssetClass, Metal};
 
     use pretty_assertions::assert_eq;
 
     #[test]
     fn should_init_gains_and_losses() {
         let gain_and_losses = GainsAndLosses::from(vec![
-            CapitalDiff::gain(Asset::Metal(Metal::Gold), dec!(26.0), dec!(500.0)),
-            CapitalDiff::gain(Asset::Metal(Metal::Palladium), dec!(11.0), dec!(100.0)),
-            CapitalDiff::gain(Asset::Metal(Metal::Silver), dec!(50.0), dec!(600.0)),
-            CapitalDiff::loss(Asset::Ticker(String::from("TSLA")), dec!(-32.0)),
-            CapitalDiff::loss(Asset::Ticker(String::from("NASDAQ100")), dec!(-400.0)),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Gold),
+                AssetClass::Metal,
+                dec!(26.0),
+                dec!(500.0),
+            ),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Palladium),
+                AssetClass::Metal,
+                dec!(11.0),
+                dec!(100.0),
+            ),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Silver),
+                AssetClass::Metal,
+                dec!(50.0),
+                dec!(600.0),
+            ),
+            CapitalDiff::loss(
+                Asset::Ticker(String::from("TSLA")),
+                AssetClass::Stock,
+                dec!(-32.0),
+            ),
+            CapitalDiff::loss(
+                Asset::Ticker(String::from("NASDAQ100")),
+                AssetClass::Etf,
+                dec!(-400.0),
+            ),
         ]);
         assert_eq!(gain_and_losses.capitals.len(), 5);
     }
@@ -142,11 +175,34 @@ mod test {
     #[test]
     fn should_calc_gains_and_losses() {
         let gain_and_losses = GainsAndLosses::from(vec![
-            CapitalDiff::gain(Asset::Metal(Metal::Gold), dec!(26.0), dec!(500.0)),
-            CapitalDiff::gain(Asset::Metal(Metal::Palladium), dec!(11.0), dec!(100.0)),
-            CapitalDiff::gain(Asset::Metal(Metal::Silver), dec!(50.0), dec!(600.0)),
-            CapitalDiff::loss(Asset::Ticker(String::from("TSLA")), dec!(-32.0)),
-            CapitalDiff::loss(Asset::Ticker(String::from("NASDAQ100")), dec!(-400.0)),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Gold),
+                AssetClass::Metal,
+                dec!(26.0),
+                dec!(500.0),
+            ),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Palladium),
+                AssetClass::Metal,
+                dec!(11.0),
+                dec!(100.0),
+            ),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Silver),
+                AssetClass::Metal,
+                dec!(50.0),
+                dec!(600.0),
+            ),
+            CapitalDiff::loss(
+                Asset::Ticker(String::from("TSLA")),
+                AssetClass::Stock,
+                dec!(-32.0),
+            ),
+            CapitalDiff::loss(
+                Asset::Ticker(String::from("NASDAQ100")),
+                AssetClass::Etf,
+                dec!(-400.0),
+            ),
         ]);
         assert_eq!(gain_and_losses.gains_value(), dec!(1200.0));
         assert_eq!(gain_and_losses.losses_value(), dec!(-432.0));
@@ -156,15 +212,52 @@ mod test {
     #[test]
     fn should_flat_gains_and_losses() {
         let gain_and_losses = GainsAndLosses::from(vec![
-            CapitalDiff::gain(Asset::Metal(Metal::Gold), dec!(26.0), dec!(500.0)),
-            CapitalDiff::gain(Asset::Metal(Metal::Gold), dec!(26.0), dec!(700.0)),
-            CapitalDiff::gain(Asset::Metal(Metal::Silver), dec!(26.0), dec!(200.0)),
-            CapitalDiff::loss(Asset::Metal(Metal::Silver), dec!(-50.0)),
-            CapitalDiff::gain(Asset::Metal(Metal::Palladium), dec!(26.0), dec!(150.0)),
-            CapitalDiff::loss(Asset::Metal(Metal::Palladium), dec!(-350.0)),
-            CapitalDiff::gain(Asset::Metal(Metal::Platinum), dec!(26.0), dec!(500.0)), // ignored since total diff is 0
-            CapitalDiff::loss(Asset::Metal(Metal::Platinum), dec!(-100.0)),
-            CapitalDiff::loss(Asset::Metal(Metal::Platinum), dec!(-400.0)),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Gold),
+                AssetClass::Metal,
+                dec!(26.0),
+                dec!(500.0),
+            ),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Gold),
+                AssetClass::Metal,
+                dec!(26.0),
+                dec!(700.0),
+            ),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Silver),
+                AssetClass::Metal,
+                dec!(26.0),
+                dec!(200.0),
+            ),
+            CapitalDiff::loss(Asset::Metal(Metal::Silver), AssetClass::Metal, dec!(-50.0)),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Palladium),
+                AssetClass::Metal,
+                dec!(26.0),
+                dec!(150.0),
+            ),
+            CapitalDiff::loss(
+                Asset::Metal(Metal::Palladium),
+                AssetClass::Metal,
+                dec!(-350.0),
+            ),
+            CapitalDiff::gain(
+                Asset::Metal(Metal::Platinum),
+                AssetClass::Metal,
+                dec!(26.0),
+                dec!(500.0),
+            ), // ignored since total diff is 0
+            CapitalDiff::loss(
+                Asset::Metal(Metal::Platinum),
+                AssetClass::Metal,
+                dec!(-100.0),
+            ),
+            CapitalDiff::loss(
+                Asset::Metal(Metal::Platinum),
+                AssetClass::Metal,
+                dec!(-400.0),
+            ),
         ])
         .flatten();
         assert_eq!(gain_and_losses.capitals.len(), 3);
