@@ -3,7 +3,7 @@
 //! This module expose a select result on the trade database
 
 use super::Trade;
-use crate::bitpanda::trade::{Asset, AssetClass, Currency, Fiat, InOut, TransactionType};
+use bitpanda_csv::{Asset, AssetClass, Currency, Fiat, InOut, TransactionType};
 
 use rust_decimal::Decimal;
 use std::collections::{HashMap, HashSet};

@@ -1,10 +1,10 @@
 ///! # Query
 ///
 /// This module exposes the query which can be performed to select trades
+use bitpanda_csv::Asset;
 use chrono::{DateTime, FixedOffset};
 
 use super::{Trade, TradeSet};
-use crate::bitpanda::trade::Asset;
 
 /// Query statement for trade
 #[derive(Default, Debug)]
@@ -69,8 +69,8 @@ impl QueryFilter {
 mod test {
 
     use super::*;
-    use crate::bitpanda::trade::{Currency, Fiat};
     use crate::mock::database::DatabaseTradeMock;
+    use bitpanda_csv::{Currency, Fiat};
 
     use chrono::TimeZone;
     use pretty_assertions::assert_eq;

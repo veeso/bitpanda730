@@ -19,8 +19,8 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "^1.0"
 argh = "^0.1"
+bitpanda-csv = "^0.1.2"
 chrono = { version = "^0.4", features = [ "serde" ] }
-csv = "^1.1"
 env_logger = "^0.9"
 log = "^0.4"
 rust_decimal = "^1.26"
@@ -29,11 +29,10 @@ serde = { version = "^1.0", features = [ "derive" ] }
 serde_json = "^1.0"
 spinners = "^4.1"
 thiserror = "^1.0"
-tempfile = "^3.3"
 ureq = { version = "^2.5", features = [ "json" ] }
 urlencoding = "^2.1"
 yahoo-finance = "0.1.1"
 
 [dev-dependencies]
+bitpanda-csv = { version = "^0.1.2", features = [ "mock" ] }
 pretty_assertions = "^1.2.1"
-uuid = { version = "^1.1", features = [ "v4" ] }

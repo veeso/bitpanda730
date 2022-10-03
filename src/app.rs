@@ -4,17 +4,17 @@
 
 use crate::{
     args::Args,
-    bitpanda::{trade::Fiat, Trade},
     database::{QuoteDatabase, TradeDatabase},
-    parser::BitpandaTradeParser,
     tax::{GainsAndLosses, Taxes},
 };
 
+use bitpanda_csv::{BitpandaTradeParser, Fiat, Trade};
 use chrono::prelude::*;
 use chrono::{DateTime, FixedOffset};
 use rust_decimal::Decimal;
 use spinners::{Spinner, Spinners};
 use std::convert::TryFrom;
+use std::fs::File;
 
 /// Application container
 pub struct App {
@@ -29,7 +29,8 @@ impl TryFrom<Args> for App {
     fn try_from(args: Args) -> Result<Self, Self::Error> {
         // open file
         info!("parsing CSV file {}", args.csv_file.display());
-        let trades = BitpandaTradeParser::parse(&args.csv_file)?;
+        let csv_file = File::open(&args.csv_file)?;
+        let trades = BitpandaTradeParser::parse(csv_file)?;
         // calc date range according to Italian timezone
         let since = FixedOffset::east(3600)
             .ymd(args.year, 1, 1)

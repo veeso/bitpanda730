@@ -4,12 +4,11 @@
 
 const API_BITPANDA_URL: &str = "https://api.bitpanda.com";
 
+use bitpanda_csv::Asset;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
-use urlencoding;
 
 use super::{Quote, Quotes};
-use crate::bitpanda::trade::Asset;
 
 mod types;
 use types::{BitpandaPrice, BitpandaYear};
@@ -82,7 +81,7 @@ impl BitpandaClient {
 mod test {
 
     use super::*;
-    use crate::bitpanda::trade::{CryptoCurrency, Currency, Metal};
+    use bitpanda_csv::{CryptoCurrency, Currency, Metal};
 
     use pretty_assertions::assert_eq;
 

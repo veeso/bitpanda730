@@ -2,7 +2,7 @@
 //!
 //! This module provides lookup for the yahoo api queries
 
-use crate::bitpanda::trade::{Asset, CryptoCurrency, Currency, Fiat};
+use bitpanda_csv::{Asset, CryptoCurrency, Currency, Fiat};
 
 /// Symbols lookup resolver
 pub struct YahooFinanceSymbols;

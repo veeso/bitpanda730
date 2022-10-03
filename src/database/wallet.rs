@@ -3,7 +3,7 @@
 //! The wallet database contains all the assets detained by your wallet
 
 use super::TradeSet;
-use crate::bitpanda::trade::{Asset, AssetClass, InOut, Trade, TransactionType};
+use bitpanda_csv::{Asset, AssetClass, InOut, Trade, TransactionType};
 
 use rust_decimal::Decimal;
 use std::collections::{hash_map::Iter, HashMap};
@@ -103,8 +103,8 @@ impl WalletDatabase {
 mod test {
 
     use super::*;
-    use crate::bitpanda::trade::{CryptoCurrency, Currency, Fiat};
     use crate::mock::database::DatabaseTradeMock;
+    use bitpanda_csv::{CryptoCurrency, Currency, Fiat};
 
     use pretty_assertions::assert_eq;
 

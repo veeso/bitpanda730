@@ -123,7 +123,7 @@ impl GainsAndLosses {
 mod test {
 
     use super::*;
-    use crate::bitpanda::trade::{Asset, Metal};
+    use bitpanda_csv::{Asset, Metal};
 
     use pretty_assertions::assert_eq;
 

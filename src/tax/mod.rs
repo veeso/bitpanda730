@@ -5,8 +5,8 @@
 mod gains_and_losses;
 pub use gains_and_losses::{Calculator as GainsAndLossesCalculator, GainsAndLosses};
 
-use crate::bitpanda::trade::{Asset, Currency, Fiat};
 use crate::database::{QuoteDatabase, TradeDatabase, TradeQuery, WalletDatabase};
+use bitpanda_csv::{Asset, Currency, Fiat};
 
 use chrono::{DateTime, Datelike, FixedOffset, TimeZone};
 use rust_decimal::Decimal;

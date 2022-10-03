@@ -11,10 +11,8 @@ use std::convert::TryFrom;
 
 mod app;
 mod args;
-mod bitpanda;
 mod database;
 mod finance;
-mod parser;
 mod tax;
 
 #[cfg(test)]

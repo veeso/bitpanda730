@@ -2,7 +2,7 @@
 //!
 //! This module defines the trade database
 
-use crate::bitpanda::Trade;
+use bitpanda_csv::Trade;
 
 mod query;
 mod set;
@@ -39,8 +39,8 @@ impl TradeDatabase {
 mod test {
 
     use super::*;
-    use crate::bitpanda::trade::{Asset, Fiat};
     use crate::mock::database::DatabaseTradeMock;
+    use bitpanda_csv::{Asset, Fiat};
 
     use pretty_assertions::assert_eq;
 

@@ -6,9 +6,9 @@ use chrono::{DateTime, FixedOffset, Utc};
 use rust_decimal::Decimal;
 use std::collections::HashMap;
 
-use crate::bitpanda::trade::{Asset, AssetClass};
 use crate::database::{TradeDatabase, TradeQuery};
 use crate::finance::{BitpandaClient, YahooFinanceClient};
+use bitpanda_csv::{Asset, AssetClass};
 
 mod symbols;
 use symbols::YahooFinanceSymbols;

@@ -1,8 +1,7 @@
 //! # Capital diff
 
+use bitpanda_csv::Asset;
 use rust_decimal::Decimal;
-
-use crate::bitpanda::trade::Asset;
 
 /// Capital diff defines a gain or a loss in the investor's capital
 #[derive(Debug, Clone)]
@@ -87,7 +86,7 @@ impl CapitalDiff {
 mod test {
 
     use super::*;
-    use crate::bitpanda::trade::Metal;
+    use bitpanda_csv::Metal;
 
     use pretty_assertions::assert_eq;
 

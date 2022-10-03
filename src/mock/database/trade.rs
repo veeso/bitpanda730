@@ -1,6 +1,5 @@
-use crate::bitpanda::trade::{Asset, AssetClass, CryptoCurrency, Currency, Fiat, InOut};
 use crate::database::TradeDatabase;
-use crate::mock::bitpanda::TradeGenerator;
+use bitpanda_csv::{Asset, AssetClass, CryptoCurrency, Currency, Fiat, InOut, TradeGenerator};
 
 use chrono::DateTime;
 use std::str::FromStr;

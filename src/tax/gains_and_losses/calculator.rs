@@ -8,9 +8,9 @@ use rust_decimal::Decimal;
 use std::collections::HashMap;
 
 use super::{CapitalDiff, GainsAndLosses};
-use crate::bitpanda::trade::{Asset, InOut, TransactionType};
-use crate::bitpanda::Trade;
 use crate::database::TradeDatabase;
+use bitpanda_csv::Trade;
+use bitpanda_csv::{Asset, InOut, TransactionType};
 use wallet::Wallet;
 
 /// Gains and losses calculator from trades
