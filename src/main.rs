@@ -7,12 +7,12 @@ extern crate serde;
 
 use env_logger::Builder as LogBuilder;
 use log::LevelFilter;
-use std::convert::TryFrom;
 
 mod app;
 mod args;
 mod database;
 mod finance;
+mod module730;
 mod tax;
 
 #[cfg(test)]
@@ -42,5 +42,5 @@ fn main() -> anyhow::Result<()> {
         anyhow::bail!("bitpanda730 {} - developed by {}", APP_VERSION, APP_AUTHORS)
     }
     // run app
-    App::try_from(args)?.run()
+    App::setup(args.year, &args.csv_file)?.run()
 }

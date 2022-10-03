@@ -3,8 +3,8 @@
 //! This module exposes the main application workflow
 
 use crate::{
-    args::Args,
     database::{QuoteDatabase, TradeDatabase},
+    module730::{Module730, Stdout as StdoutPaginate},
     tax::{GainsAndLosses, Taxes},
 };
 
@@ -13,8 +13,8 @@ use chrono::prelude::*;
 use chrono::{DateTime, FixedOffset};
 use rust_decimal::Decimal;
 use spinners::{Spinner, Spinners};
-use std::convert::TryFrom;
 use std::fs::File;
+use std::path::Path;
 
 /// Application container
 pub struct App {
@@ -23,20 +23,17 @@ pub struct App {
     to: DateTime<FixedOffset>,
 }
 
-impl TryFrom<Args> for App {
-    type Error = anyhow::Error;
-
-    fn try_from(args: Args) -> Result<Self, Self::Error> {
+impl App {
+    /// Setup a new application
+    pub fn setup(year: i32, csv_file: &Path) -> anyhow::Result<Self> {
         // open file
-        info!("parsing CSV file {}", args.csv_file.display());
-        let csv_file = File::open(&args.csv_file)?;
+        info!("parsing CSV file {}", csv_file.display());
+        let csv_file = File::open(csv_file)?;
         let trades = BitpandaTradeParser::parse(csv_file)?;
         // calc date range according to Italian timezone
-        let since = FixedOffset::east(3600)
-            .ymd(args.year, 1, 1)
-            .and_hms(0, 0, 0);
+        let since = FixedOffset::east(3600).ymd(year, 1, 1).and_hms(0, 0, 0);
         let to = FixedOffset::east(3600)
-            .ymd(args.year, 12, 31)
+            .ymd(year, 12, 31)
             .and_hms(23, 59, 59);
         info!("working on time range {} => {}", since, to);
         // filter by date
@@ -48,9 +45,7 @@ impl TryFrom<Args> for App {
         let trades = TradeDatabase::from(trades);
         Ok(App { trades, since, to })
     }
-}
 
-impl App {
     /// Run application
     pub fn run(self) -> anyhow::Result<()> {
         let quotes = self.load_quotes_database()?;
@@ -71,7 +66,13 @@ impl App {
             capitals_diff.gains_value() + capitals_diff.losses_value(),
             capitals_diff.tax_to_pay()
         );
-        todo!("repr output")
+        // repr output
+        debug!("preparing 730...");
+        let m730 = Module730::prepare(ivafe, capitals_diff)?;
+        debug!("730 ready; writing data to output...");
+        m730.output(StdoutPaginate::default())?;
+
+        Ok(())
     }
 
     /// Load quotes database from trades
@@ -109,18 +110,10 @@ mod test {
     use super::*;
 
     use pretty_assertions::assert_eq;
-    use std::path::PathBuf;
 
     #[test]
     fn should_init_app_from_args() {
-        let args = Args {
-            year: 2022,
-            debug: false,
-            verbose: false,
-            csv_file: PathBuf::from("./test/bitpanda.csv"),
-            version: false,
-        };
-        let app = App::try_from(args).unwrap();
+        let app = App::setup(2022, Path::new("./test/bitpanda.csv")).unwrap();
         assert_eq!(app.trades.all().trades().len(), 12);
     }
 }
