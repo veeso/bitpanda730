@@ -5,10 +5,9 @@ extern crate rust_decimal_macros;
 #[macro_use]
 extern crate serde;
 
-use std::convert::TryFrom;
-
 use env_logger::Builder as LogBuilder;
 use log::LevelFilter;
+use std::convert::TryFrom;
 
 mod app;
 mod args;

@@ -88,9 +88,10 @@ impl Quote {
         }
         let eur_change = conversion.price_at(self.date);
         // convert => self.price : eur_change = x : 1.0
-        debug!(
+        trace!(
             "applying USD to EUR conversion; 1$ = {}€ at {}",
-            eur_change, self.date
+            eur_change,
+            self.date
         );
         self.price /= eur_change;
         // set currency to eur
