@@ -3,7 +3,7 @@
 //! This module expose the tax calculators for Italian taxation ruleset
 
 mod gains_and_losses;
-pub use gains_and_losses::{Calculator as GainsAndLossesCalculator, GainsAndLosses};
+pub use gains_and_losses::{Calculator as GainsAndLossesCalculator, CapitalDiff, GainsAndLosses};
 
 use crate::database::{QuoteDatabase, TradeDatabase, TradeQuery, WalletDatabase};
 use bitpanda_csv::{Asset, Currency, Fiat};

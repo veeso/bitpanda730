@@ -7,24 +7,25 @@ use rust_decimal::Decimal;
 use crate::tax::GainsAndLosses;
 
 mod paginate;
+mod quadro_rt;
 mod quadro_rw;
+
 pub use paginate::{Paginate, Stdout};
+use quadro_rt::QuadroRt;
 use quadro_rw::QuadroRw;
 
-/// Module 730 data
+/// Module 730 data for investments gains
+#[derive(Debug)]
 pub struct Module730 {
-    ivafe: Decimal,
-    gains_and_losses: GainsAndLosses,
-    quadro_rw: QuadroRw,
+    pub quadro_rt: QuadroRt,
+    pub quadro_rw: QuadroRw,
 }
 
 impl Module730 {
     /// Instantiate a new `Module730`
     pub fn prepare(ivafe: Decimal, gains_and_losses: GainsAndLosses) -> anyhow::Result<Self> {
-        todo!();
         Ok(Self {
-            ivafe,
-            gains_and_losses,
+            quadro_rt: QuadroRt::prepare(gains_and_losses),
             quadro_rw: QuadroRw::prepare(ivafe),
         })
     }
