@@ -23,10 +23,14 @@ pub struct Module730 {
 
 impl Module730 {
     /// Instantiate a new `Module730`
-    pub fn prepare(ivafe: Decimal, gains_and_losses: GainsAndLosses) -> anyhow::Result<Self> {
+    pub fn prepare(
+        average_balance: Decimal,
+        ivafe: Decimal,
+        gains_and_losses: GainsAndLosses,
+    ) -> anyhow::Result<Self> {
         Ok(Self {
             quadro_rt: QuadroRt::prepare(gains_and_losses),
-            quadro_rw: QuadroRw::prepare(ivafe),
+            quadro_rw: QuadroRw::prepare(average_balance, ivafe),
         })
     }
 

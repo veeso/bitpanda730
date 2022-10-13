@@ -56,7 +56,9 @@ impl App {
         );
         debug!("taxes setup");
         let taxes = Taxes::new(&self.trades, &quotes, self.since, self.to);
-        let ivafe = self.calc_ivafe(&taxes)?;
+        let average_balance = self.calc_average_balance(&taxes)?;
+        info!("Average balance is: € {}", average_balance);
+        let ivafe = self.calc_ivafe(&taxes, average_balance);
         info!("IVAFE is: € {}", ivafe);
         let capitals_diff = self.calc_gains_and_losses(&taxes)?;
         info!(
@@ -68,7 +70,7 @@ impl App {
         );
         // repr output
         debug!("preparing 730...");
-        let m730 = Module730::prepare(ivafe, capitals_diff)?;
+        let m730 = Module730::prepare(average_balance, ivafe, capitals_diff)?;
         debug!("730 ready; writing data to output...");
         m730.output(StdoutPaginate::default())?;
 
@@ -84,10 +86,18 @@ impl App {
         Ok(quotes)
     }
 
-    fn calc_ivafe(&self, taxes: &Taxes) -> anyhow::Result<Decimal> {
+    fn calc_average_balance(&self, taxes: &Taxes) -> anyhow::Result<Decimal> {
         debug!("calculating IVAFE");
         let mut sp = Spinner::new(Spinners::Dots, "Calculating IVAFE...".to_string());
-        let ivafe = taxes.ivafe();
+        let avg_balance = taxes.average_balance();
+        sp.stop();
+        avg_balance
+    }
+
+    fn calc_ivafe(&self, taxes: &Taxes, avg_balance: Decimal) -> Decimal {
+        debug!("calculating IVAFE");
+        let mut sp = Spinner::new(Spinners::Dots, "Calculating IVAFE...".to_string());
+        let ivafe = taxes.ivafe(avg_balance);
         sp.stop();
         ivafe
     }

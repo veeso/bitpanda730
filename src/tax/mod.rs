@@ -48,17 +48,16 @@ impl<'a> Taxes<'a> {
     /// > Sono tenuti a versare anche l’IVAFE, ossia l’Imposta sul Valore delle Attività Finanziarie all’Estero.
     /// > Tale imposta è applicata in modo
     /// > proporzionale al 2 per mille annuo del valore delle attività finanziarie.
-    pub fn ivafe(&self) -> anyhow::Result<Decimal> {
-        let avg_balance = self.average_balance()?;
-        debug!("average balance for this year is {}", avg_balance);
-        if avg_balance < dec!(5000.0) {
+    pub fn ivafe(&self, average_balance: Decimal) -> Decimal {
+        debug!("average balance for this year is {}", average_balance);
+        if average_balance < dec!(5000.0) {
             info!("average balance is under € 5000, so IVAFE is not required");
-            Ok(Decimal::ZERO)
+            Decimal::ZERO
         } else {
             // avg_balance : 100 = ivafe : 0.2
-            let ivafe = avg_balance * dec!(0.002);
+            let ivafe = average_balance * dec!(0.002);
             info!("IVAFE: {}", ivafe);
-            Ok(ivafe.round_dp(2))
+            ivafe.round_dp(2)
         }
     }
 
@@ -79,7 +78,7 @@ impl<'a> Taxes<'a> {
     /// > Il calcolo della giacenza media annua si determina dividendo la somma delle giacenze giornaliere per 365,
     /// > indipendentemente dal numero di giorni in cui il deposito/conto risulta attivo.
     /// > Per giacenze giornaliere si intendono i saldi giornalieri per valuta.
-    fn average_balance(&self) -> anyhow::Result<Decimal> {
+    pub fn average_balance(&self) -> anyhow::Result<Decimal> {
         let mut date = (*self.since.offset())
             .ymd(self.since.year(), self.since.month(), self.since.day())
             .and_hms(23, 59, 59);
@@ -151,7 +150,8 @@ mod test {
         let trades = DatabaseTradeMock::mock();
         let quotes = DatabaseQuoteMock::mock();
         let tax = mocked(&trades, &quotes);
-        assert_eq!(tax.ivafe().unwrap(), dec!(19.47));
+        let avg_balance = tax.average_balance().unwrap();
+        assert_eq!(tax.ivafe(avg_balance), dec!(19.47));
     }
 
     #[test]
@@ -159,7 +159,8 @@ mod test {
         let trades = TradeDatabase::from(vec![]);
         let quotes = DatabaseQuoteMock::mock();
         let tax = mocked(&trades, &quotes);
-        assert_eq!(tax.ivafe().unwrap(), Decimal::ZERO);
+        let avg_balance = tax.average_balance().unwrap();
+        assert_eq!(tax.ivafe(avg_balance), Decimal::ZERO);
     }
 
     #[test]
