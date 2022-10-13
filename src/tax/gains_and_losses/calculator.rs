@@ -120,7 +120,12 @@ impl Calculator {
         if diff.is_zero() {
             None
         } else if diff.is_sign_negative() {
-            Some(CapitalDiff::loss(trade.asset(), trade.asset_class(), diff))
+            Some(CapitalDiff::loss(
+                trade.asset(),
+                trade.asset_class(),
+                self.tax_percentage(trade.asset()),
+                diff,
+            ))
         } else {
             Some(CapitalDiff::gain(
                 trade.asset(),

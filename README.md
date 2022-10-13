@@ -104,7 +104,7 @@ Se ti piace bitpanda730 e vuoi darmi un piccolo aiuto per quello che faccio, puo
 
 ## Powered by 💪
 
-- [csv](https://github.com/BurntSushi/rust-csv)
+- [bitpanda-csv](https://github.com/veeso/bitpanda-csv)
 
 ---
 

@@ -124,7 +124,18 @@ impl GainsAndLosses {
                 total_value,
             ))
         } else {
-            Some(CapitalDiff::loss(asset, asset_class, total_value))
+            let tax_percentage: Decimal = capitals_diff
+                .iter()
+                .filter(|x| x.is_loss())
+                .map(|x| x.tax_percentage())
+                .max()
+                .unwrap();
+            Some(CapitalDiff::loss(
+                asset,
+                asset_class,
+                tax_percentage,
+                total_value,
+            ))
         }
     }
 }
@@ -161,11 +172,13 @@ mod test {
             CapitalDiff::loss(
                 Asset::Ticker(String::from("TSLA")),
                 AssetClass::Stock,
+                dec!(26.0),
                 dec!(-32.0),
             ),
             CapitalDiff::loss(
                 Asset::Ticker(String::from("NASDAQ100")),
                 AssetClass::Etf,
+                dec!(26.0),
                 dec!(-400.0),
             ),
         ]);
@@ -196,11 +209,13 @@ mod test {
             CapitalDiff::loss(
                 Asset::Ticker(String::from("TSLA")),
                 AssetClass::Stock,
+                dec!(26.0),
                 dec!(-32.0),
             ),
             CapitalDiff::loss(
                 Asset::Ticker(String::from("NASDAQ100")),
                 AssetClass::Etf,
+                dec!(26.0),
                 dec!(-400.0),
             ),
         ]);
@@ -230,7 +245,12 @@ mod test {
                 dec!(26.0),
                 dec!(200.0),
             ),
-            CapitalDiff::loss(Asset::Metal(Metal::Silver), AssetClass::Metal, dec!(-50.0)),
+            CapitalDiff::loss(
+                Asset::Metal(Metal::Silver),
+                AssetClass::Metal,
+                dec!(26.0),
+                dec!(-50.0),
+            ),
             CapitalDiff::gain(
                 Asset::Metal(Metal::Palladium),
                 AssetClass::Metal,
@@ -240,6 +260,7 @@ mod test {
             CapitalDiff::loss(
                 Asset::Metal(Metal::Palladium),
                 AssetClass::Metal,
+                dec!(26.0),
                 dec!(-350.0),
             ),
             CapitalDiff::gain(
@@ -251,11 +272,13 @@ mod test {
             CapitalDiff::loss(
                 Asset::Metal(Metal::Platinum),
                 AssetClass::Metal,
+                dec!(26.0),
                 dec!(-100.0),
             ),
             CapitalDiff::loss(
                 Asset::Metal(Metal::Platinum),
                 AssetClass::Metal,
+                dec!(26.0),
                 dec!(-400.0),
             ),
         ])

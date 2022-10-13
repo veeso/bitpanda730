@@ -48,14 +48,19 @@ impl CapitalDiff {
     }
 
     /// Construct a Loss capital diff
-    pub fn loss(asset: Asset, asset_class: AssetClass, value: Decimal) -> Self {
+    pub fn loss(
+        asset: Asset,
+        asset_class: AssetClass,
+        tax_percentage: Decimal,
+        value: Decimal,
+    ) -> Self {
         assert!(value.is_sign_negative());
         Self {
             diff: Diff::Loss,
             asset,
             asset_class,
             tax: Decimal::ZERO,
-            tax_percentage: Decimal::ZERO,
+            tax_percentage,
             value,
         }
     }
@@ -144,11 +149,16 @@ mod test {
 
     #[test]
     fn should_init_loss() {
-        let loss = CapitalDiff::loss(Asset::Metal(Metal::Gold), AssetClass::Metal, dec!(-56.0));
+        let loss = CapitalDiff::loss(
+            Asset::Metal(Metal::Gold),
+            AssetClass::Metal,
+            dec!(26.0),
+            dec!(-56.0),
+        );
         assert_eq!(loss.is_loss(), true);
         assert_eq!(loss.is_gain(), false);
         assert_eq!(loss.tax(), Decimal::ZERO);
-        assert_eq!(loss.tax_percentage(), Decimal::ZERO);
+        assert_eq!(loss.tax_percentage(), dec!(26.0));
         assert_eq!(loss.value(), dec!(-56.0));
     }
 }
