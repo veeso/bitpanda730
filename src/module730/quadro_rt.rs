@@ -42,7 +42,7 @@ pub struct Sezione2 {
 }
 
 impl QuadroRt {
-    pub fn prepare(gains_and_losses: GainsAndLosses) -> Self {
+    pub fn prepare(gains_and_losses: &GainsAndLosses) -> Self {
         Self {
             sezione_1: Sezione1::prepare(
                 gains_and_losses
@@ -69,12 +69,14 @@ impl Sezione1 {
         let total_sold = gains_and_losses_12_percent
             .iter()
             .map(|x| x.value().abs())
-            .sum();
+            .sum::<Decimal>()
+            .round_dp(2);
         let loss = gains_and_losses_12_percent
             .iter()
             .filter(|x| x.is_loss())
             .map(|x| x.value().abs())
-            .sum();
+            .sum::<Decimal>()
+            .round_dp(2);
         let diff: Decimal = total_sold - loss;
         let rt3 = if diff.is_sign_negative() {
             (Some(diff.abs()), None)
@@ -95,12 +97,14 @@ impl Sezione2 {
         let total_sold = gains_and_losses_26_percent
             .iter()
             .map(|x| x.value().abs())
-            .sum();
+            .sum::<Decimal>()
+            .round_dp(2);
         let loss = gains_and_losses_26_percent
             .iter()
             .filter(|x| x.is_loss())
             .map(|x| x.value().abs())
-            .sum();
+            .sum::<Decimal>()
+            .round_dp(2);
         let diff: Decimal = total_sold - loss;
         let rt23 = if diff.is_sign_negative() {
             (Some(diff.abs()), None)
@@ -126,7 +130,7 @@ mod test {
 
     #[test]
     fn should_prepare_quadro_rt() {
-        let quadro_rt = QuadroRt::prepare(gains_and_losses());
+        let quadro_rt = QuadroRt::prepare(&gains_and_losses());
         assert_eq!(quadro_rt.sezione_1.rt1, dec!(680.0));
         assert_eq!(quadro_rt.sezione_1.rt2_col3, dec!(80.0));
         assert_eq!(quadro_rt.sezione_1.rt3_col1, None);

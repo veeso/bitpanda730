@@ -70,9 +70,9 @@ impl App {
         );
         // repr output
         debug!("preparing 730...");
-        let m730 = Module730::prepare(average_balance, ivafe, capitals_diff)?;
+        let m730 = Module730::prepare(average_balance, ivafe, &capitals_diff)?;
         debug!("730 ready; writing data to output...");
-        m730.output(StdoutPaginate::default())?;
+        m730.output(StdoutPaginate::default(), &capitals_diff)?;
 
         Ok(())
     }

@@ -26,16 +26,20 @@ impl Module730 {
     pub fn prepare(
         average_balance: Decimal,
         ivafe: Decimal,
-        gains_and_losses: GainsAndLosses,
+        gains_and_losses: &GainsAndLosses,
     ) -> anyhow::Result<Self> {
         Ok(Self {
-            quadro_rt: QuadroRt::prepare(gains_and_losses),
+            quadro_rt: QuadroRt::prepare(&gains_and_losses),
             quadro_rw: QuadroRw::prepare(average_balance, ivafe),
         })
     }
 
     /// Output the 730 columns using the provided paginator
-    pub fn output(&self, paginator: impl Paginate) -> anyhow::Result<()> {
-        paginator.paginate(self)
+    pub fn output(
+        &self,
+        paginator: impl Paginate,
+        gains_and_losses: &GainsAndLosses,
+    ) -> anyhow::Result<()> {
+        paginator.paginate(self, gains_and_losses)
     }
 }

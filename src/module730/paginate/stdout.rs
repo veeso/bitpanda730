@@ -2,14 +2,19 @@
 //!
 //! This module exposes the stdout paginator for 730
 
-use super::{Module730, Paginate};
+use super::{GainsAndLosses, Module730, Paginate};
 
 /// Stdout paginator
 #[derive(Default)]
 pub struct Stdout;
 
 impl Paginate for Stdout {
-    fn paginate(&self, module: &Module730) -> anyhow::Result<()> {
+    fn paginate(
+        &self,
+        module: &Module730,
+        gains_and_losses: &GainsAndLosses,
+    ) -> anyhow::Result<()> {
+        self.print_gains_and_losses(gains_and_losses);
         self.print_quadro_rt(module);
         self.print_quadro_rw(module);
         Ok(())
@@ -17,6 +22,31 @@ impl Paginate for Stdout {
 }
 
 impl Stdout {
+    fn print_gains_and_losses(&self, gains_and_losses: &GainsAndLosses) {
+        println!("Guadagni e Perdite: ");
+        println!();
+        for diff in gains_and_losses.iter() {
+            if diff.is_gain() {
+                println!(
+                    "l'asset {} ha registrato un guadagno di € {}, di cui € {} di tasse ({} %)",
+                    diff.asset(),
+                    diff.value().round_dp(2),
+                    diff.tax().round_dp(2),
+                    diff.tax_percentage()
+                );
+            } else {
+                println!(
+                    "l'asset {} ha registrato una perdita di € {} ({} %)",
+                    diff.asset(),
+                    diff.value().round_dp(2),
+                    diff.tax_percentage()
+                );
+            }
+        }
+        println!("--------------------------------------------");
+        println!();
+    }
+
     fn print_quadro_rt(&self, module: &Module730) {
         println!("QUADRO RT:");
         println!();
