@@ -82,7 +82,10 @@ mod test {
     fn should_calc_balance_at() {
         use chrono::prelude::*;
         let db = DatabaseTradeMock::mock();
-        let date = FixedOffset::east(3600).ymd(2021, 08, 15).and_hms(0, 0, 0);
+        let date = FixedOffset::east_opt(3600)
+            .unwrap()
+            .with_ymd_and_hms(2021, 08, 15, 0, 0, 0)
+            .unwrap();
         assert_eq!(
             db.select(TradeQuery::default().before(date))
                 .fiat_balance(Fiat::Eur),

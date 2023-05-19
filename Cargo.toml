@@ -1,5 +1,5 @@
 [package]
-authors = ["Christian Visintin <christian.visintin1997@gmail.com>"]
+authors = ["Christian Visintin <christian.visintin@veeso.dev>"]
 categories = ["command-line-utilities"]
 description = "Ottieni le indicazioni su come compilare il 730 partendo dalle transazioni Bitpanda"
 edition = "2021"
@@ -19,20 +19,17 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "^1.0"
 argh = "^0.1"
-bitpanda-csv = "^0.1.2"
+bitpanda-api = "^0.1"
+bitpanda-csv = "^0.1"
 chrono = { version = "^0.4", features = [ "serde" ] }
-env_logger = "^0.9"
+env_logger = "^0.10"
 log = "^0.4"
 rust_decimal = "^1.26"
 rust_decimal_macros = "^1.26"
-serde = { version = "^1.0", features = [ "derive" ] }
-serde_json = "^1.0"
 spinners = "^4.1"
 thiserror = "^1.0"
-ureq = { version = "^2.5", features = [ "json" ] }
-urlencoding = "^2.1"
-yahoo-finance = "0.1.1"
+tokio = { version = "1.28", features = [ "macros", "net", "rt", "rt-multi-thread" ] }
 
 [dev-dependencies]
-bitpanda-csv = { version = "^0.1.2", features = [ "mock" ] }
-pretty_assertions = "^1.2.1"
+bitpanda-csv = { version = "^0.1", features = [ "mock" ] }
+pretty_assertions = "^1.2"

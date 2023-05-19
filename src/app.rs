@@ -31,10 +31,14 @@ impl App {
         let csv_file = File::open(csv_file)?;
         let trades = BitpandaTradeParser::parse(csv_file)?;
         // calc date range according to Italian timezone
-        let since = FixedOffset::east(3600).ymd(year, 1, 1).and_hms(0, 0, 0);
-        let to = FixedOffset::east(3600)
-            .ymd(year, 12, 31)
-            .and_hms(23, 59, 59);
+        let since = FixedOffset::east_opt(3600)
+            .unwrap()
+            .with_ymd_and_hms(year, 1, 1, 0, 0, 0)
+            .unwrap();
+        let to = FixedOffset::east_opt(3600)
+            .unwrap()
+            .with_ymd_and_hms(year, 12, 31, 23, 59, 59)
+            .unwrap();
         info!("working on time range {} => {}", since, to);
         // filter by date
         let trades: Vec<Trade> = trades
@@ -47,8 +51,8 @@ impl App {
     }
 
     /// Run application
-    pub fn run(self) -> anyhow::Result<()> {
-        let quotes = self.load_quotes_database()?;
+    pub async fn run(self) -> anyhow::Result<()> {
+        let quotes = self.load_quotes_database().await?;
         debug!("quotes loaded");
         info!(
             "current FIAT balance: € {}",
@@ -78,10 +82,10 @@ impl App {
     }
 
     /// Load quotes database from trades
-    fn load_quotes_database(&self) -> anyhow::Result<QuoteDatabase> {
+    async fn load_quotes_database(&self) -> anyhow::Result<QuoteDatabase> {
         debug!("loading quotes from {} to {}...", self.since, self.to);
         let mut sp = Spinner::new(Spinners::Dots, "loading asset prices...".to_string());
-        let quotes = QuoteDatabase::load(&self.trades, self.since, self.to)?;
+        let quotes = QuoteDatabase::load(&self.trades, self.since, self.to).await?;
         sp.stop();
         Ok(quotes)
     }
@@ -121,8 +125,8 @@ mod test {
 
     use pretty_assertions::assert_eq;
 
-    #[test]
-    fn should_init_app_from_args() {
+    #[tokio::test]
+    async fn should_init_app_from_args() {
         let app = App::setup(2022, Path::new("./test/bitpanda.csv")).unwrap();
         assert_eq!(app.trades.all().trades().len(), 12);
     }

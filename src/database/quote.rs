@@ -7,11 +7,8 @@ use rust_decimal::Decimal;
 use std::collections::HashMap;
 
 use crate::database::{TradeDatabase, TradeQuery};
-use crate::finance::{BitpandaClient, YahooFinanceClient};
-use bitpanda_csv::{Asset, AssetClass};
-
-mod symbols;
-use symbols::YahooFinanceSymbols;
+use crate::finance::BitpandaClient;
+use bitpanda_csv::Asset;
 
 /// The quote database stores the asset quotations for all the symbols provided
 pub struct QuoteDatabase {
@@ -20,7 +17,7 @@ pub struct QuoteDatabase {
 
 impl QuoteDatabase {
     /// Load quote database
-    pub fn load(
+    pub async fn load(
         trades: &TradeDatabase,
         from: DateTime<FixedOffset>,
         to: DateTime<FixedOffset>,
@@ -30,22 +27,11 @@ impl QuoteDatabase {
             .collect_assets();
         let from = DateTime::from(from);
         let to = DateTime::from(to);
-        let yahoo_finance = Self::load_exchange(from, to)?;
-        let bitpanda = BitpandaClient::new(from, to);
+        let bitpanda = BitpandaClient::init(from, to).await?;
         debug!("collected {} assets from trades", assets.len());
         let mut quotes = HashMap::with_capacity(assets.len());
-        debug!("sorting assets by exchange...");
-        let assets = AssetsSortedByExchange::from(assets);
-        debug!(
-            "assets sorted by exchange; bitpanda: {}; yahoo: {}",
-            assets.bitpanda.len(),
-            assets.yahoo.len()
-        );
         // get prices
-        if !assets.bitpanda.is_empty() {
-            Self::assets_price_from_bitpanda(&mut quotes, &bitpanda, &assets.bitpanda, to)?;
-        }
-        Self::assets_price_from_yahoo(&mut quotes, &yahoo_finance, &assets.yahoo, to)?;
+        Self::assets_price_from_bitpanda(&mut quotes, &bitpanda, &assets, to).await?;
         Ok(Self { quotes })
     }
 
@@ -56,41 +42,14 @@ impl QuoteDatabase {
 
     // -- loaders
 
-    fn load_exchange(from: DateTime<Utc>, to: DateTime<Utc>) -> anyhow::Result<YahooFinanceClient> {
-        debug!("loading exchange in time range {} - {}", from, to);
-        YahooFinanceClient::new(from, to)
-    }
-
-    fn assets_price_from_yahoo(
-        quotes: &mut HashMap<Asset, Decimal>,
-        yahoo_finance: &YahooFinanceClient,
-        assets: &[Asset],
-        price_at: DateTime<Utc>,
-    ) -> anyhow::Result<()> {
-        debug!("getting assets price from Yahoo");
-        for asset in assets.iter() {
-            let symbol = YahooFinanceSymbols::lookup(asset);
-            debug!("got symbol {} for {}", symbol, asset);
-            let quotation = yahoo_finance.get_symbol_quotes(&symbol)?;
-            let price = quotation.price_at(price_at);
-            debug!(
-                "got quotation for {}; price at {}: {}",
-                symbol, price_at, price
-            );
-            quotes.insert(asset.clone(), price);
-        }
-
-        Ok(())
-    }
-
-    fn assets_price_from_bitpanda(
+    async fn assets_price_from_bitpanda(
         quotes: &mut HashMap<Asset, Decimal>,
         bitpanda: &BitpandaClient,
         assets: &[Asset],
         price_at: DateTime<Utc>,
     ) -> anyhow::Result<()> {
         debug!("getting asset price from Bitpanda");
-        let quotations = bitpanda.get_symbols_quotes(assets)?;
+        let quotations = bitpanda.get_symbols_quotes(assets).await?;
         for (asset, quotation) in quotations.into_iter() {
             let price = quotation.price_at(price_at);
             debug!(
@@ -105,38 +64,6 @@ impl QuoteDatabase {
     }
 }
 
-/// A struct which contains the assets sorted by the exchange to query to get prices
-#[derive(Default)]
-struct AssetsSortedByExchange {
-    bitpanda: Vec<Asset>,
-    yahoo: Vec<Asset>,
-}
-
-impl From<Vec<(Asset, AssetClass)>> for AssetsSortedByExchange {
-    fn from(assets: Vec<(Asset, AssetClass)>) -> Self {
-        let mut sorted_assets = Self::default();
-        for (asset, class) in assets.into_iter() {
-            match (asset, class) {
-                (Asset::Ticker(name), _) if &name == "RDSA" => {
-                    // Rdsa (SHELL) not on yahoo???
-                    sorted_assets.bitpanda.push(Asset::Ticker(name));
-                }
-                (Asset::Ticker(name), _) if &name == "3CP" => {
-                    // XIAOMI
-                    sorted_assets.bitpanda.push(Asset::Ticker(name));
-                }
-                (asset, AssetClass::Commodity | AssetClass::Etf | AssetClass::Metal) => {
-                    sorted_assets.bitpanda.push(asset);
-                }
-                (asset, AssetClass::Fiat | AssetClass::Stock | AssetClass::Cryptocurrency) => {
-                    sorted_assets.yahoo.push(asset);
-                }
-            }
-        }
-        sorted_assets
-    }
-}
-
 #[cfg(test)]
 mod test {
 
@@ -146,10 +73,14 @@ mod test {
     use chrono::prelude::*;
     use pretty_assertions::assert_eq;
 
-    #[test]
-    fn should_load_quote_database() {
+    #[tokio::test]
+    async fn should_load_quote_database() {
         let trades = DatabaseTradeMock::mock();
-        assert!(QuoteDatabase::load(&trades, date(2021, 1, 1), date(2021, 12, 31)).is_ok());
+        assert!(
+            QuoteDatabase::load(&trades, date(2021, 1, 1), date(2021, 12, 31))
+                .await
+                .is_ok()
+        );
     }
 
     #[test]
@@ -165,8 +96,9 @@ mod test {
     }
 
     fn date(year: i32, month: u32, day: u32) -> DateTime<FixedOffset> {
-        FixedOffset::west(3600)
-            .ymd(year, month, day)
-            .and_hms(12, 0, 0)
+        FixedOffset::west_opt(3600)
+            .unwrap()
+            .with_ymd_and_hms(year, month, day, 12, 0, 0)
+            .unwrap()
     }
 }

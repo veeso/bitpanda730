@@ -42,10 +42,10 @@ impl<'a> Set<'a> {
     }
 
     /// Collect assets and their class from database (unique)
-    pub fn collect_assets(&self) -> Vec<(Asset, AssetClass)> {
+    pub fn collect_assets(&self) -> Vec<Asset> {
         self.trades
             .iter()
-            .map(|x| (x.asset(), x.asset_class()))
+            .map(|x| x.asset())
             .collect::<HashSet<_>>()
             .into_iter()
             .collect()

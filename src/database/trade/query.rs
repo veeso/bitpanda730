@@ -80,8 +80,18 @@ mod test {
         let db = DatabaseTradeMock::mock();
 
         let query = Query::default()
-            .after(FixedOffset::east(3600).ymd(2021, 7, 5).and_hms(0, 0, 0))
-            .before(FixedOffset::east(3600).ymd(2021, 9, 1).and_hms(0, 0, 0));
+            .after(
+                FixedOffset::east_opt(3600)
+                    .unwrap()
+                    .with_ymd_and_hms(2021, 7, 5, 0, 0, 0)
+                    .unwrap(),
+            )
+            .before(
+                FixedOffset::east_opt(3600)
+                    .unwrap()
+                    .with_ymd_and_hms(2021, 9, 1, 0, 0, 0)
+                    .unwrap(),
+            );
         assert_eq!(query.select(&db.trades).trades().len(), 5);
     }
 

@@ -2,78 +2,90 @@
 //!
 //! This module exposes the bitpanda api client
 
-const API_BITPANDA_URL: &str = "https://api.bitpanda.com";
-
-use bitpanda_csv::Asset;
+use bitpanda_api::model::ohlc::Period;
+use bitpanda_api::model::{Asset, AssetClass};
+use bitpanda_api::Client;
+use bitpanda_csv::Asset as CsvAsset;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 
 use super::{Quote, Quotes};
 
-mod types;
-use types::{BitpandaPrice, BitpandaYear};
+const CURRENCY: &str = "EUR";
 
 /// The Bitpanda client is used to fetch prices for provided assets
 /// NOTE: should only be used for ETFs/Commodities/Metals, while for other assets, please refer to Yahoo
 pub struct BitpandaClient {
+    assets: Vec<Asset>,
+    client: Client,
     from: DateTime<Utc>,
     to: DateTime<Utc>,
 }
 
 impl BitpandaClient {
-    pub fn new(from: DateTime<Utc>, to: DateTime<Utc>) -> Self {
-        Self { from, to }
+    pub async fn init(from: DateTime<Utc>, to: DateTime<Utc>) -> anyhow::Result<Self> {
+        let assets = Self::get_assets().await?;
+
+        Ok(Self {
+            assets,
+            client: Client::default(),
+            from,
+            to,
+        })
     }
 
     /// Get symbols quotes
-    pub fn get_symbols_quotes(&self, assets: &[Asset]) -> anyhow::Result<HashMap<Asset, Quotes>> {
-        let symbols: Vec<String> = assets
-            .iter()
-            .map(|x| urlencoding::encode(&x.to_string()).to_string())
-            .collect();
-        let api_data = self.fetch_bitpanda_api(&symbols)?;
-        let mut quotes = HashMap::with_capacity(symbols.len());
-        // iter symbols to check whether all symbols are covered
-        for asset in assets.iter() {
-            let prices = match api_data.data.get(&asset.to_string()) {
-                Some(prices) => prices,
-                None => anyhow::bail!("{}: not found in bitpanda response", asset.to_string()),
-            };
-            quotes.insert(asset.clone(), self.convert_prices_to_quote(prices));
+    pub async fn get_symbols_quotes(
+        &self,
+        assets: &[CsvAsset],
+    ) -> anyhow::Result<HashMap<CsvAsset, Quotes>> {
+        let mut quotes = HashMap::with_capacity(assets.len());
+        for asset in assets {
+            debug!("getting PID for {asset}");
+            let pid = &self.select_asset_from_db(&asset.to_string())?.pid;
+            debug!("querying OHLC for {pid}");
+            let ohlc = self.client.get_ohlc(Period::Year, pid, CURRENCY).await?;
+            quotes.insert(
+                asset.clone(),
+                Quotes::from(
+                    ohlc.chart
+                        .into_iter()
+                        .filter(|entry| entry.time >= self.from && entry.time < self.to)
+                        .map(Quote::from)
+                        .collect::<Vec<Quote>>(),
+                ),
+            );
         }
+
         Ok(quotes)
     }
 
-    /// fetch assets from bitpanda API
-    fn fetch_bitpanda_api(&self, symbols: &[String]) -> anyhow::Result<BitpandaYear> {
-        let query = symbols.join("%2C");
-        let url = format!("{}/v2/ohlc/eur/year?assets={}", API_BITPANDA_URL, query);
-        debug!("getting data for assets at {}", url);
-        let response = ureq::get(&url)
-            .call()
-            .map_err(|e| anyhow::anyhow!("failed to get assets: {}", e))?;
-        response
-            .into_json()
-            .map_err(|e| anyhow::anyhow!("failed to decode response body: {}", e))
+    /// get all assets from bitpanda
+    async fn get_assets() -> anyhow::Result<Vec<Asset>> {
+        let client = Client::default();
+        debug!("fetching all assets from bitpanda...");
+        let mut assets = Vec::new();
+        debug!("fetching commodities...");
+        assets.extend(client.get_assets(AssetClass::Commodity).await?);
+        debug!("fetching cryptos...");
+        assets.extend(client.get_assets(AssetClass::Cryptocurrency).await?);
+        debug!("fetching etfs...");
+        assets.extend(client.get_assets(AssetClass::Etf).await?);
+        debug!("fetching metals...");
+        assets.extend(client.get_assets(AssetClass::Metal).await?);
+        debug!("fetching stocks...");
+        assets.extend(client.get_assets(AssetClass::Stock).await?);
+        debug!("found a total amount of {} assets", assets.len());
+
+        Ok(assets)
     }
 
-    /// Convert bitpanda prices to Quotes
-    fn convert_prices_to_quote(&self, prices: &[BitpandaPrice]) -> Quotes {
-        Quotes::from(
-            prices
-                .iter()
-                .filter(|x| {
-                    x.attributes.time.date_iso8601 >= self.from
-                        && x.attributes.time.date_iso8601 <= self.to
-                })
-                .map(|x| {
-                    Quote::eur(
-                        DateTime::from(x.attributes.time.date_iso8601),
-                        x.attributes.close,
-                    )
-                })
-                .collect::<Vec<Quote>>(),
-        )
+    /// select asset from database. If not found return error
+    fn select_asset_from_db(&self, symbol: &String) -> anyhow::Result<&Asset> {
+        match self.assets.iter().find(|asset| &asset.symbol == symbol) {
+            Some(asset) => Ok(asset),
+            None => anyhow::bail!("asset {symbol} not found"),
+        }
     }
 }
 
@@ -85,51 +97,71 @@ mod test {
 
     use pretty_assertions::assert_eq;
 
-    #[test]
-    fn should_get_quotes_for_symbols() {
-        let bitpanda = client();
+    #[tokio::test]
+    async fn should_get_quotes_for_symbols() {
+        let bitpanda = client().await;
         let assets = vec![
-            Asset::Ticker(String::from("NASDAQ100")), // ETF
-            Asset::Ticker(String::from("S&P500")),    // ETF with strange name
-            Asset::Ticker(String::from("NATGAS")),    // Commodity
-            Asset::Metal(Metal::Gold),                // Metal
-            Asset::Ticker(String::from("AMZN")),      // Stock
-            Asset::HongKong(1177),                    // Stock hong kong
-            Asset::Currency(Currency::Crypto(CryptoCurrency::OneInch)), // Crypto
-            Asset::Currency(Currency::Crypto(CryptoCurrency::Sushi)), // Crypto
+            CsvAsset::Ticker(String::from("NASDAQ100")), // ETF
+            CsvAsset::Ticker(String::from("S&P500")),    // ETF with strange name
+            CsvAsset::Ticker(String::from("NATGAS")),    // Commodity
+            CsvAsset::Metal(Metal::Gold),                // Metal
+            CsvAsset::Ticker(String::from("AMZN")),      // Stock
+            CsvAsset::HongKong(1177),                    // Stock hong kong
+            CsvAsset::Currency(Currency::Crypto(CryptoCurrency::OneInch)), // Crypto
+            CsvAsset::Currency(Currency::Crypto(CryptoCurrency::Sushi)), // Crypto
         ];
         // fetch
-        let quotes = bitpanda.get_symbols_quotes(&assets).unwrap();
+        let quotes = bitpanda.get_symbols_quotes(&assets).await.unwrap();
         assert_eq!(quotes.len(), 8);
         assert!(quotes
-            .get(&Asset::Ticker(String::from("NASDAQ100")))
-            .is_some());
-        assert!(quotes.get(&Asset::Ticker(String::from("S&P500"))).is_some());
-        assert!(quotes.get(&Asset::Ticker(String::from("NATGAS"))).is_some());
-        assert!(quotes.get(&Asset::Metal(Metal::Gold)).is_some());
-        assert!(quotes.get(&Asset::Ticker(String::from("AMZN"))).is_some());
-        assert!(quotes.get(&Asset::HongKong(1177)).is_some());
-        assert!(quotes
-            .get(&Asset::Currency(Currency::Crypto(CryptoCurrency::OneInch)))
+            .get(&CsvAsset::Ticker(String::from("NASDAQ100")))
             .is_some());
         assert!(quotes
-            .get(&Asset::Currency(Currency::Crypto(CryptoCurrency::Sushi)))
+            .get(&CsvAsset::Ticker(String::from("S&P500")))
+            .is_some());
+        assert!(quotes
+            .get(&CsvAsset::Ticker(String::from("NATGAS")))
+            .is_some());
+        assert!(quotes.get(&CsvAsset::Metal(Metal::Gold)).is_some());
+        assert!(quotes
+            .get(&CsvAsset::Ticker(String::from("AMZN")))
+            .is_some());
+        assert!(quotes.get(&CsvAsset::HongKong(1177)).is_some());
+        assert!(quotes
+            .get(&CsvAsset::Currency(Currency::Crypto(
+                CryptoCurrency::OneInch
+            )))
+            .is_some());
+        assert!(quotes
+            .get(&CsvAsset::Currency(Currency::Crypto(CryptoCurrency::Sushi)))
             .is_some());
     }
 
-    #[test]
-    fn should_fail_get_quotes_for_unexisting_symbol() {
-        let bitpanda = client();
-        let assets = vec![Asset::Ticker(String::from("SOLARIUDINE"))];
-        assert!(bitpanda.get_symbols_quotes(&assets).is_err());
+    #[tokio::test]
+    async fn should_fail_get_quotes_for_unexisting_symbol() {
+        let bitpanda = client().await;
+        let assets = vec![CsvAsset::Ticker(String::from("SOLARIUDINE"))];
+        assert!(bitpanda.get_symbols_quotes(&assets).await.is_err());
     }
 
-    fn client() -> BitpandaClient {
+    async fn client() -> BitpandaClient {
         use chrono::prelude::*;
         use chrono::NaiveDate;
-        BitpandaClient::new(
-            Utc.from_utc_datetime(&NaiveDate::from_ymd(2021, 1, 1).and_hms(12, 0, 0)),
-            Utc.from_utc_datetime(&NaiveDate::from_ymd(2050, 12, 31).and_hms(23, 59, 59)),
+        BitpandaClient::init(
+            Utc.from_utc_datetime(
+                &NaiveDate::from_ymd_opt(2021, 1, 1)
+                    .unwrap()
+                    .and_hms_opt(12, 0, 0)
+                    .unwrap(),
+            ),
+            Utc.from_utc_datetime(
+                &NaiveDate::from_ymd_opt(2050, 12, 31)
+                    .unwrap()
+                    .and_hms_opt(23, 59, 59)
+                    .unwrap(),
+            ),
         )
+        .await
+        .unwrap()
     }
 }

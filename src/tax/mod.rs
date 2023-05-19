@@ -8,7 +8,7 @@ pub use gains_and_losses::{Calculator as GainsAndLossesCalculator, CapitalDiff, 
 use crate::database::{QuoteDatabase, TradeDatabase, TradeQuery, WalletDatabase};
 use bitpanda_csv::{Asset, Currency, Fiat};
 
-use chrono::{DateTime, Datelike, FixedOffset, TimeZone};
+use chrono::{DateTime, Datelike, FixedOffset, LocalResult, TimeZone};
 use rust_decimal::Decimal;
 
 /// Italian fiscal taxes calculator
@@ -79,9 +79,17 @@ impl<'a> Taxes<'a> {
     /// > indipendentemente dal numero di giorni in cui il deposito/conto risulta attivo.
     /// > Per giacenze giornaliere si intendono i saldi giornalieri per valuta.
     pub fn average_balance(&self) -> anyhow::Result<Decimal> {
-        let mut date = (*self.since.offset())
-            .ymd(self.since.year(), self.since.month(), self.since.day())
-            .and_hms(23, 59, 59);
+        let mut date = match (*self.since.offset()).with_ymd_and_hms(
+            self.since.year(),
+            self.since.month(),
+            self.since.day(),
+            23,
+            59,
+            59,
+        ) {
+            LocalResult::Single(date) => date,
+            _ => anyhow::bail!("invalid date"),
+        };
         let mut total_balance = Decimal::ZERO;
         // Iterate over the days in the time range
         while date <= self.to {
@@ -138,44 +146,48 @@ mod test {
 
     use crate::mock::database::{DatabaseQuoteMock, DatabaseTradeMock};
 
-    #[test]
-    fn should_init_taxes() {
+    #[tokio::test]
+    async fn should_init_taxes() {
         let trades = DatabaseTradeMock::mock();
-        let quotes = DatabaseQuoteMock::mock();
+        let quotes = DatabaseQuoteMock::mock().await;
         let _ = mocked(&trades, &quotes);
     }
 
-    #[test]
-    fn should_calc_ivafe() {
+    #[tokio::test]
+    async fn should_calc_ivafe() {
         let trades = DatabaseTradeMock::mock();
-        let quotes = DatabaseQuoteMock::mock();
+        let quotes = DatabaseQuoteMock::mock().await;
         let tax = mocked(&trades, &quotes);
         let avg_balance = tax.average_balance().unwrap();
         assert_eq!(tax.ivafe(avg_balance), dec!(19.47));
     }
 
-    #[test]
-    fn should_return_ivafe_0_if_below_5000() {
+    #[tokio::test]
+    async fn should_return_ivafe_0_if_below_5000() {
         let trades = TradeDatabase::from(vec![]);
-        let quotes = DatabaseQuoteMock::mock();
+        let quotes = DatabaseQuoteMock::mock().await;
         let tax = mocked(&trades, &quotes);
         let avg_balance = tax.average_balance().unwrap();
         assert_eq!(tax.ivafe(avg_balance), Decimal::ZERO);
     }
 
-    #[test]
-    fn should_calc_average_balance() {
+    #[tokio::test]
+    async fn should_calc_average_balance() {
         let trades = DatabaseTradeMock::mock();
-        let quotes = DatabaseQuoteMock::mock();
+        let quotes = DatabaseQuoteMock::mock().await;
         let tax = mocked(&trades, &quotes);
         assert_eq!(tax.average_balance().unwrap().round_dp(2), dec!(9736.96));
     }
 
     fn mocked<'a>(trades: &'a TradeDatabase, quotes: &'a QuoteDatabase) -> Taxes<'a> {
-        let since = FixedOffset::east(3600).ymd(2022, 1, 1).and_hms(0, 0, 0);
-        let to = FixedOffset::east(3600)
-            .ymd(2022, 12, 31)
-            .and_hms(23, 59, 59);
+        let since = FixedOffset::east_opt(3600)
+            .unwrap()
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .unwrap();
+        let to = FixedOffset::east_opt(3600)
+            .unwrap()
+            .with_ymd_and_hms(2022, 12, 31, 23, 59, 59)
+            .unwrap();
         Taxes::new(trades, quotes, since, to)
     }
 }

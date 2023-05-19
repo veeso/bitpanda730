@@ -2,8 +2,6 @@
 extern crate log;
 #[macro_use]
 extern crate rust_decimal_macros;
-#[macro_use]
-extern crate serde;
 
 use env_logger::Builder as LogBuilder;
 use log::LevelFilter;
@@ -24,7 +22,8 @@ use args::Args;
 const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 const APP_AUTHORS: &str = env!("CARGO_PKG_AUTHORS");
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     // parse arguments
     let args: Args = argh::from_env();
     // setup logging
@@ -42,5 +41,5 @@ fn main() -> anyhow::Result<()> {
         anyhow::bail!("bitpanda730 {} - developed by {}", APP_VERSION, APP_AUTHORS)
     }
     // run app
-    App::setup(args.year, &args.csv_file)?.run()
+    App::setup(args.year, &args.csv_file)?.run().await
 }

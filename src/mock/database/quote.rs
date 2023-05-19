@@ -11,15 +11,20 @@ use chrono::FixedOffset;
 pub struct DatabaseQuoteMock;
 
 impl DatabaseQuoteMock {
-    pub fn mock() -> QuoteDatabase {
+    pub async fn mock() -> QuoteDatabase {
         let db = DatabaseTradeMock::mock();
         QuoteDatabase::load(
             &db,
-            FixedOffset::east(3600).ymd(2021, 1, 1).and_hms(0, 0, 0),
-            FixedOffset::east(3600)
-                .ymd(2021, 12, 31)
-                .and_hms(23, 59, 59),
+            FixedOffset::east_opt(3600)
+                .unwrap()
+                .with_ymd_and_hms(2021, 1, 1, 0, 0, 0)
+                .unwrap(),
+            FixedOffset::east_opt(3600)
+                .unwrap()
+                .with_ymd_and_hms(2021, 12, 31, 23, 59, 59)
+                .unwrap(),
         )
+        .await
         .unwrap()
     }
 }
