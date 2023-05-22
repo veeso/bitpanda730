@@ -8,13 +8,14 @@ use crate::{
     tax::{GainsAndLosses, Taxes},
 };
 
-use bitpanda_csv::{BitpandaTradeParser, Fiat, Trade};
+use bitpanda_csv::{AsyncBitpandaTradeParser, Fiat, Trade};
 use chrono::prelude::*;
 use chrono::{DateTime, FixedOffset};
 use rust_decimal::Decimal;
 use spinners::{Spinner, Spinners};
-use std::fs::File;
 use std::path::Path;
+use tokio::fs::File;
+use tokio::io::BufReader;
 
 /// Application container
 pub struct App {
@@ -25,11 +26,12 @@ pub struct App {
 
 impl App {
     /// Setup a new application
-    pub fn setup(year: i32, csv_file: &Path) -> anyhow::Result<Self> {
+    pub async fn setup(year: i32, csv_file: &Path) -> anyhow::Result<Self> {
         // open file
         info!("parsing CSV file {}", csv_file.display());
-        let csv_file = File::open(csv_file)?;
-        let trades = BitpandaTradeParser::parse(csv_file)?;
+        let csv_file = File::open(csv_file).await?;
+        let reader = BufReader::new(csv_file);
+        let trades = AsyncBitpandaTradeParser::parse(reader).await?;
         // calc date range according to Italian timezone
         let since = FixedOffset::east_opt(3600)
             .unwrap()
@@ -128,7 +130,9 @@ mod test {
     #[tokio::test]
     async fn should_init_app_from_args() {
         crate::mock::log();
-        let app = App::setup(2022, Path::new("./test/bitpanda.csv")).unwrap();
+        let app = App::setup(2022, Path::new("./test/bitpanda.csv"))
+            .await
+            .unwrap();
         assert_eq!(app.trades.all().trades().len(), 12);
     }
 }

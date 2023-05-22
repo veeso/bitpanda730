@@ -20,7 +20,7 @@ path = "src/main.rs"
 anyhow = "^1.0"
 argh = "^0.1"
 bitpanda-api = "^0.1"
-bitpanda-csv = "^0.1"
+bitpanda-csv = { version = "^0.2", default-features = false, features = [ "async" ] }
 chrono = { version = "^0.4", features = [ "serde" ] }
 env_logger = "^0.10"
 log = "^0.4"
@@ -32,5 +32,5 @@ tokio = { version = "1.28", features = [ "macros", "net", "rt", "rt-multi-thread
 yahoo-finance = "^0.1"
 
 [dev-dependencies]
-bitpanda-csv = { version = "^0.1", features = [ "mock" ] }
+bitpanda-csv = { version = "^0.2", default-features = false, features = [ "async", "mock" ] }
 pretty_assertions = "^1.2"

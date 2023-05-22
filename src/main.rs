@@ -41,5 +41,5 @@ async fn main() -> anyhow::Result<()> {
         anyhow::bail!("bitpanda730 {} - developed by {}", APP_VERSION, APP_AUTHORS)
     }
     // run app
-    App::setup(args.year, &args.csv_file)?.run().await
+    App::setup(args.year, &args.csv_file).await?.run().await
 }
