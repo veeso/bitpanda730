@@ -28,8 +28,9 @@ rust_decimal = "^1.26"
 rust_decimal_macros = "^1.26"
 spinners = "^4.1"
 thiserror = "^1.0"
+time = "^0.3"
 tokio = { version = "1.28", features = [ "macros", "net", "rt", "rt-multi-thread" ] }
-yahoo-finance = "^0.1"
+yahoo_finance_api = "^1.6"
 
 [dev-dependencies]
 bitpanda-csv = { version = "^0.2", default-features = false, features = [ "async", "mock" ] }

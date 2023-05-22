@@ -31,7 +31,7 @@ impl QuoteDatabase {
             .collect_assets();
         let from = DateTime::from(from);
         let to = DateTime::from(to);
-        let yahoo_finance = YahooFinanceClient::new(from, to)?;
+        let yahoo_finance = YahooFinanceClient::new(from, to).await?;
         let bitpanda = BitpandaClient::init(from, to).await?;
         debug!("collected {} assets from trades", assets.len());
         let mut quotes = HashMap::with_capacity(assets.len());
@@ -39,7 +39,7 @@ impl QuoteDatabase {
         let assets = AssetsSortedByExchange::from(assets);
         // get prices
         Self::assets_price_from_bitpanda(&mut quotes, &bitpanda, &assets.bitpanda, to).await?;
-        Self::assets_price_from_yahoo(&mut quotes, &yahoo_finance, &assets.yahoo, to)?;
+        Self::assets_price_from_yahoo(&mut quotes, &yahoo_finance, &assets.yahoo, to).await?;
         Ok(Self { quotes })
     }
 
@@ -50,7 +50,7 @@ impl QuoteDatabase {
 
     // -- loaders
 
-    fn assets_price_from_yahoo(
+    async fn assets_price_from_yahoo(
         quotes: &mut HashMap<Asset, Decimal>,
         yahoo_finance: &YahooFinanceClient,
         assets: &[Asset],
@@ -60,7 +60,7 @@ impl QuoteDatabase {
         for asset in assets.iter() {
             let symbol = YahooFinanceSymbols::lookup(asset);
             debug!("got symbol {} for {}", symbol, asset);
-            let quotation = yahoo_finance.get_symbol_quotes(&symbol)?;
+            let quotation = yahoo_finance.get_symbol_quotes(&symbol).await?;
             let price = quotation.price_at(price_at);
             debug!(
                 "got quotation for {}; price at {}: {}",
