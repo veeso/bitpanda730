@@ -150,6 +150,7 @@ mod test {
 
     #[test]
     fn should_init_gains_and_losses() {
+        crate::mock::log();
         let gain_and_losses = GainsAndLosses::from(vec![
             CapitalDiff::gain(
                 Asset::Metal(Metal::Gold),
@@ -187,6 +188,7 @@ mod test {
 
     #[test]
     fn should_calc_gains_and_losses() {
+        crate::mock::log();
         let gain_and_losses = GainsAndLosses::from(vec![
             CapitalDiff::gain(
                 Asset::Metal(Metal::Gold),
@@ -226,6 +228,7 @@ mod test {
 
     #[test]
     fn should_flat_gains_and_losses() {
+        crate::mock::log();
         let gain_and_losses = GainsAndLosses::from(vec![
             CapitalDiff::gain(
                 Asset::Metal(Metal::Gold),

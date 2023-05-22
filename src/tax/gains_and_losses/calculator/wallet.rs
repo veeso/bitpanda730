@@ -144,6 +144,7 @@ mod test {
 
     #[test]
     fn should_init_block() {
+        crate::mock::log();
         let block = Block::new(dec!(2.0), dec!(186.32));
         assert_eq!(block.amount_asset, dec!(2.0));
         assert_eq!(block.amount_fiat, dec!(186.32));
@@ -151,6 +152,7 @@ mod test {
 
     #[test]
     fn should_sell_block_fraction() {
+        crate::mock::log();
         let mut block = Block::new(dec!(2.25), dec!(186.32));
         let fraction = block.sell_fraction(dec!(0.75));
         assert_eq!(block.amount_asset, dec!(1.5));
@@ -161,6 +163,7 @@ mod test {
 
     #[test]
     fn should_init_wallet() {
+        crate::mock::log();
         let mut wallet = Wallet::default();
         assert!(wallet.blocks.is_empty());
         wallet.buy(dec!(2.0), dec!(186.32));
@@ -173,6 +176,7 @@ mod test {
 
     #[test]
     fn should_sell_wallet_blocks_entire_block() {
+        crate::mock::log();
         let mut wallet = Wallet::default();
         wallet.buy(dec!(2.0), dec!(186.32));
         wallet.buy(dec!(0.5), dec!(68.78));
@@ -185,6 +189,7 @@ mod test {
 
     #[test]
     fn should_sell_wallet_blocks_entire_wallet() {
+        crate::mock::log();
         let mut wallet = Wallet::default();
         wallet.buy(dec!(2.0), dec!(186.32));
         wallet.buy(dec!(0.5), dec!(68.78));
@@ -197,6 +202,7 @@ mod test {
 
     #[test]
     fn should_sell_wallet_blocks_partial() {
+        crate::mock::log();
         let mut wallet = Wallet::default();
         wallet.buy(dec!(2.0), dec!(186.32));
         wallet.buy(dec!(0.5), dec!(68.78));
@@ -209,6 +215,7 @@ mod test {
 
     #[test]
     fn should_fail_selling_wallet_blocks_if_more_than_balance() {
+        crate::mock::log();
         let mut wallet = Wallet::default();
         wallet.buy(dec!(2.0), dec!(186.32));
         wallet.buy(dec!(0.5), dec!(68.78));
@@ -217,6 +224,7 @@ mod test {
 
     #[test]
     fn should_perform_stock_split() {
+        crate::mock::log();
         let mut wallet = Wallet::default();
         wallet.buy(dec!(0.025), dec!(186.32));
         wallet.buy(dec!(0.01), dec!(68.78));

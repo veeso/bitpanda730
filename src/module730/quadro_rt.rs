@@ -130,6 +130,7 @@ mod test {
 
     #[test]
     fn should_prepare_quadro_rt() {
+        crate::mock::log();
         let quadro_rt = QuadroRt::prepare(&gains_and_losses());
         assert_eq!(quadro_rt.sezione_1.rt1, dec!(680.0));
         assert_eq!(quadro_rt.sezione_1.rt2_col3, dec!(80.0));

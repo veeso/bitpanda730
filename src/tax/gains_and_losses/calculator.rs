@@ -168,6 +168,7 @@ mod test {
 
     #[test]
     fn should_calculate_gains_and_losses() {
+        crate::mock::log();
         let db = DatabaseTradeMock::mock();
         let mut calculator = Calculator::default();
         let gains_and_losses = calculator.calculate(&db).unwrap();
@@ -179,6 +180,7 @@ mod test {
 
     #[test]
     fn should_calculate_gains_and_losses_correctly_when_a_stock_split_occurs() {
+        crate::mock::log();
         let db = DatabaseTradeMock::google_stock_split_mock();
         let mut calculator = Calculator::default();
         let gains_and_losses = calculator.calculate(&db).unwrap();
@@ -188,6 +190,7 @@ mod test {
 
     #[test]
     fn should_tell_tax_percentage() {
+        crate::mock::log();
         let calculator = Calculator::default();
         assert_eq!(
             calculator.tax_percentage(Asset::Metal(Metal::Gold)),

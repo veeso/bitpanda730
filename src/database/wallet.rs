@@ -110,6 +110,7 @@ mod test {
 
     #[test]
     fn should_load_wallet_database() {
+        crate::mock::log();
         let trades = DatabaseTradeMock::mock();
         let db = WalletDatabase::load(&trades.all());
         assert_eq!(db.assets.len(), 9);
@@ -117,6 +118,7 @@ mod test {
 
     #[test]
     fn should_get_asset_balance_for_stock() {
+        crate::mock::log();
         let trades = DatabaseTradeMock::mock();
         let db = WalletDatabase::load(&trades.all());
         assert_eq!(
@@ -127,6 +129,7 @@ mod test {
 
     #[test]
     fn should_get_asset_balance_for_fiat() {
+        crate::mock::log();
         let trades = DatabaseTradeMock::mock();
         let db = WalletDatabase::load(&trades.all());
         assert_eq!(
@@ -138,6 +141,7 @@ mod test {
 
     #[test]
     fn should_get_asset_balance_for_transfer() {
+        crate::mock::log();
         let trades = DatabaseTradeMock::mock();
         let db = WalletDatabase::load(&trades.all());
         assert_eq!(

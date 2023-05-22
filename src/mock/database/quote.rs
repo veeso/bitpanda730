@@ -17,11 +17,11 @@ impl DatabaseQuoteMock {
             &db,
             FixedOffset::east_opt(3600)
                 .unwrap()
-                .with_ymd_and_hms(2021, 1, 1, 0, 0, 0)
+                .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
                 .unwrap(),
             FixedOffset::east_opt(3600)
                 .unwrap()
-                .with_ymd_and_hms(2021, 12, 31, 23, 59, 59)
+                .with_ymd_and_hms(2022, 12, 31, 23, 59, 59)
                 .unwrap(),
         )
         .await

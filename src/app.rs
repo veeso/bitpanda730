@@ -127,6 +127,7 @@ mod test {
 
     #[tokio::test]
     async fn should_init_app_from_args() {
+        crate::mock::log();
         let app = App::setup(2022, Path::new("./test/bitpanda.csv")).unwrap();
         assert_eq!(app.trades.all().trades().len(), 12);
     }

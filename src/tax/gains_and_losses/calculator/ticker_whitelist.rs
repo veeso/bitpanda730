@@ -157,6 +157,7 @@ mod test {
 
     #[test]
     fn should_tell_whether_ticker_is_whitelisted() {
+        crate::mock::log();
         assert!(TickerWhitelist::is_whitelisted(CHINESE_GOVERNMENT_BONDS));
         assert!(TickerWhitelist::is_whitelisted(EUROZONE_GOVERNMENT_BONDS));
         assert!(TickerWhitelist::is_whitelisted(JAPANESE_GOVERNMENT_BONDS));

@@ -29,7 +29,7 @@ impl Module730 {
         gains_and_losses: &GainsAndLosses,
     ) -> anyhow::Result<Self> {
         Ok(Self {
-            quadro_rt: QuadroRt::prepare(&gains_and_losses),
+            quadro_rt: QuadroRt::prepare(gains_and_losses),
             quadro_rw: QuadroRw::prepare(average_balance, ivafe),
         })
     }

@@ -36,6 +36,7 @@ mod test {
 
     #[test]
     fn should_prepare_quadro_rw() {
+        crate::mock::log();
         let quadro = QuadroRw::prepare(dec!(13171.0), dec!(26.342));
         assert_eq!(quadro.rw1_column8, dec!(13171.0));
         assert_eq!(quadro.rw1_column11, dec!(26.34));

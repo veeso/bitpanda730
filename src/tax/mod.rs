@@ -148,6 +148,7 @@ mod test {
 
     #[tokio::test]
     async fn should_init_taxes() {
+        crate::mock::log();
         let trades = DatabaseTradeMock::mock();
         let quotes = DatabaseQuoteMock::mock().await;
         let _ = mocked(&trades, &quotes);
@@ -155,6 +156,7 @@ mod test {
 
     #[tokio::test]
     async fn should_calc_ivafe() {
+        crate::mock::log();
         let trades = DatabaseTradeMock::mock();
         let quotes = DatabaseQuoteMock::mock().await;
         let tax = mocked(&trades, &quotes);
@@ -164,6 +166,7 @@ mod test {
 
     #[tokio::test]
     async fn should_return_ivafe_0_if_below_5000() {
+        crate::mock::log();
         let trades = TradeDatabase::from(vec![]);
         let quotes = DatabaseQuoteMock::mock().await;
         let tax = mocked(&trades, &quotes);
@@ -173,6 +176,7 @@ mod test {
 
     #[tokio::test]
     async fn should_calc_average_balance() {
+        crate::mock::log();
         let trades = DatabaseTradeMock::mock();
         let quotes = DatabaseQuoteMock::mock().await;
         let tax = mocked(&trades, &quotes);

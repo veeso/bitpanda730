@@ -99,6 +99,7 @@ mod test {
 
     #[tokio::test]
     async fn should_get_quotes_for_symbols() {
+        crate::mock::log();
         let bitpanda = client().await;
         let assets = vec![
             CsvAsset::Ticker(String::from("NASDAQ100")), // ETF
@@ -139,6 +140,7 @@ mod test {
 
     #[tokio::test]
     async fn should_fail_get_quotes_for_unexisting_symbol() {
+        crate::mock::log();
         let bitpanda = client().await;
         let assets = vec![CsvAsset::Ticker(String::from("SOLARIUDINE"))];
         assert!(bitpanda.get_symbols_quotes(&assets).await.is_err());
@@ -149,7 +151,7 @@ mod test {
         use chrono::NaiveDate;
         BitpandaClient::init(
             Utc.from_utc_datetime(
-                &NaiveDate::from_ymd_opt(2021, 1, 1)
+                &NaiveDate::from_ymd_opt(2022, 1, 1)
                     .unwrap()
                     .and_hms_opt(12, 0, 0)
                     .unwrap(),

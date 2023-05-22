@@ -111,6 +111,7 @@ mod test {
 
     #[test]
     fn should_init_gain() {
+        crate::mock::log();
         let gain = CapitalDiff::gain(
             Asset::Metal(Metal::Gold),
             AssetClass::Metal,
@@ -128,6 +129,7 @@ mod test {
     #[test]
     #[should_panic]
     fn should_panic_on_bad_tax_percentage() {
+        crate::mock::log();
         CapitalDiff::gain(
             Asset::Metal(Metal::Gold),
             AssetClass::Metal,
@@ -139,6 +141,7 @@ mod test {
     #[test]
     #[should_panic]
     fn should_panic_on_negative_tax_percentage() {
+        crate::mock::log();
         CapitalDiff::gain(
             Asset::Metal(Metal::Gold),
             AssetClass::Metal,
@@ -149,6 +152,7 @@ mod test {
 
     #[test]
     fn should_init_loss() {
+        crate::mock::log();
         let loss = CapitalDiff::loss(
             Asset::Metal(Metal::Gold),
             AssetClass::Metal,

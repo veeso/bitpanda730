@@ -77,19 +77,20 @@ mod test {
 
     #[test]
     fn should_query_by_date_range() {
+        crate::mock::log();
         let db = DatabaseTradeMock::mock();
 
         let query = Query::default()
             .after(
                 FixedOffset::east_opt(3600)
                     .unwrap()
-                    .with_ymd_and_hms(2021, 7, 5, 0, 0, 0)
+                    .with_ymd_and_hms(2022, 7, 5, 0, 0, 0)
                     .unwrap(),
             )
             .before(
                 FixedOffset::east_opt(3600)
                     .unwrap()
-                    .with_ymd_and_hms(2021, 9, 1, 0, 0, 0)
+                    .with_ymd_and_hms(2022, 9, 1, 0, 0, 0)
                     .unwrap(),
             );
         assert_eq!(query.select(&db.trades).trades().len(), 5);
@@ -97,6 +98,7 @@ mod test {
 
     #[test]
     fn should_query_by_asset_neq() {
+        crate::mock::log();
         let db = DatabaseTradeMock::mock();
 
         let query = Query::default().asset_neq(Asset::Currency(Currency::Fiat(Fiat::Eur)));

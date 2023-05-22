@@ -10,12 +10,12 @@ impl DatabaseTradeMock {
     pub fn mock() -> TradeDatabase {
         TradeDatabase::from(vec![
             TradeGenerator::deposit(
-                DateTime::from_str("2021-01-06T12:32:24Z").unwrap(),
+                DateTime::from_str("2022-01-06T12:32:24Z").unwrap(),
                 dec!(10180.00),
                 Fiat::Eur,
             ),
             TradeGenerator::buy(
-                DateTime::from_str("2021-07-01T16:32:24Z").unwrap(),
+                DateTime::from_str("2022-07-01T16:32:24Z").unwrap(),
                 dec!(225.97),
                 Fiat::Eur,
                 dec!(1.0),
@@ -24,7 +24,7 @@ impl DatabaseTradeMock {
                 dec!(225.97),
             ),
             TradeGenerator::buy(
-                DateTime::from_str("2021-07-01T16:32:24Z").unwrap(),
+                DateTime::from_str("2022-07-01T16:32:24Z").unwrap(),
                 dec!(514.25),
                 Fiat::Eur,
                 dec!(3.0),
@@ -33,7 +33,7 @@ impl DatabaseTradeMock {
                 dec!(171.65),
             ),
             TradeGenerator::buy(
-                DateTime::from_str("2021-07-01T16:32:24Z").unwrap(),
+                DateTime::from_str("2022-07-01T16:32:24Z").unwrap(),
                 dec!(877.01),
                 Fiat::Eur,
                 dec!(1.5),
@@ -42,7 +42,7 @@ impl DatabaseTradeMock {
                 dec!(584.73),
             ),
             TradeGenerator::buy(
-                DateTime::from_str("2021-07-01T16:32:24Z").unwrap(),
+                DateTime::from_str("2022-07-01T16:32:24Z").unwrap(),
                 dec!(454.75),
                 Fiat::Eur,
                 dec!(0.01354533),
@@ -51,7 +51,7 @@ impl DatabaseTradeMock {
                 dec!(33572.12),
             ),
             TradeGenerator::buy(
-                DateTime::from_str("2021-07-05T12:32:24Z").unwrap(),
+                DateTime::from_str("2022-07-05T12:32:24Z").unwrap(),
                 dec!(586.40),
                 Fiat::Eur,
                 dec!(80.0),
@@ -60,7 +60,7 @@ impl DatabaseTradeMock {
                 dec!(7.33),
             ),
             TradeGenerator::sell(
-                DateTime::from_str("2021-08-13T16:32:24Z").unwrap(),
+                DateTime::from_str("2022-08-13T16:32:24Z").unwrap(),
                 dec!(593.26),
                 Fiat::Eur,
                 dec!(0.01354533),
@@ -69,7 +69,7 @@ impl DatabaseTradeMock {
                 dec!(43798.12),
             ),
             TradeGenerator::sell(
-                DateTime::from_str("2021-08-16T16:32:24Z").unwrap(),
+                DateTime::from_str("2022-08-16T16:32:24Z").unwrap(),
                 dec!(334.50),
                 Fiat::Eur,
                 dec!(2.0),
@@ -78,12 +78,12 @@ impl DatabaseTradeMock {
                 dec!(167.25),
             ),
             TradeGenerator::deposit(
-                DateTime::from_str("2021-08-20T12:32:24Z").unwrap(),
+                DateTime::from_str("2022-08-20T12:32:24Z").unwrap(),
                 dec!(1018.00),
                 Fiat::Usd,
             ),
             TradeGenerator::buy(
-                DateTime::from_str("2021-08-30T12:32:24Z").unwrap(),
+                DateTime::from_str("2022-08-30T12:32:24Z").unwrap(),
                 dec!(865.41),
                 Fiat::Eur,
                 dec!(3.0),
@@ -92,7 +92,7 @@ impl DatabaseTradeMock {
                 dec!(288.47),
             ),
             TradeGenerator::sell(
-                DateTime::from_str("2021-09-22T16:32:24Z").unwrap(),
+                DateTime::from_str("2022-09-22T16:32:24Z").unwrap(),
                 dec!(313.04),
                 Fiat::Eur,
                 dec!(0.5),
@@ -101,12 +101,12 @@ impl DatabaseTradeMock {
                 dec!(626.08),
             ),
             TradeGenerator::withdrawal(
-                DateTime::from_str("2021-09-24T12:32:24Z").unwrap(),
+                DateTime::from_str("2022-09-24T12:32:24Z").unwrap(),
                 dec!(500.00),
                 Fiat::Eur,
             ),
             TradeGenerator::sell(
-                DateTime::from_str("2021-12-10T12:32:24Z").unwrap(),
+                DateTime::from_str("2022-12-10T12:32:24Z").unwrap(),
                 dec!(565.53),
                 Fiat::Eur,
                 dec!(3.0),
@@ -115,7 +115,7 @@ impl DatabaseTradeMock {
                 dec!(188.51),
             ),
             TradeGenerator::buy(
-                DateTime::from_str("2021-12-12T12:32:24Z").unwrap(),
+                DateTime::from_str("2022-12-12T12:32:24Z").unwrap(),
                 dec!(405.0),
                 Fiat::Eur,
                 dec!(300.0),
@@ -125,7 +125,7 @@ impl DatabaseTradeMock {
             ),
             TradeGenerator::transfer(
                 // NOTE: staking
-                DateTime::from_str("2021-12-12T12:32:24Z").unwrap(),
+                DateTime::from_str("2022-12-12T12:32:24Z").unwrap(),
                 InOut::Outgoing,
                 dec!(270.0),
                 Fiat::Eur,
