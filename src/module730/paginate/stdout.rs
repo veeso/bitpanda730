@@ -23,7 +23,7 @@ impl Paginate for Stdout {
 
 impl Stdout {
     fn print_gains_and_losses(&self, gains_and_losses: &GainsAndLosses) {
-        println!("Guadagni e Perdite: ");
+        println!("\nGuadagni e Perdite: ");
         println!();
         for diff in gains_and_losses.iter() {
             if diff.is_gain() {
@@ -76,8 +76,11 @@ impl Stdout {
     fn print_quadro_rw(&self, module: &Module730) {
         println!("QUADRO RW:");
         println!();
-        println!("RW1 - Col.8: € {}", module.quadro_rw.rw1_column8);
-        println!("RW1 - Col.11: € {}", module.quadro_rw.rw1_column11);
+        println!(
+            "RW1 - Col.8: € {} (giacenza media)",
+            module.quadro_rw.rw1_column8
+        );
+        println!("RW1 - Col.11: € {} (IVAFE)", module.quadro_rw.rw1_column11);
         println!("--------------------------------------------");
         println!();
     }

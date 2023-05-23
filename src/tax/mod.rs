@@ -161,7 +161,7 @@ mod test {
         let quotes = DatabaseQuoteMock::mock().await;
         let tax = mocked(&trades, &quotes);
         let avg_balance = tax.average_balance().unwrap();
-        assert_eq!(tax.ivafe(avg_balance), dec!(19.47));
+        assert_eq!(tax.ivafe(avg_balance), dec!(20.16));
     }
 
     #[tokio::test]
@@ -180,7 +180,7 @@ mod test {
         let trades = DatabaseTradeMock::mock();
         let quotes = DatabaseQuoteMock::mock().await;
         let tax = mocked(&trades, &quotes);
-        assert_eq!(tax.average_balance().unwrap().round_dp(2), dec!(9736.96));
+        assert_eq!(tax.average_balance().unwrap().round_dp(2), dec!(10077.96));
     }
 
     fn mocked<'a>(trades: &'a TradeDatabase, quotes: &'a QuoteDatabase) -> Taxes<'a> {

@@ -20,9 +20,9 @@ pub struct QuadroRt {
 pub struct Sezione1 {
     /// Corrispettivo incassato (gain + loss)
     pub rt1: Decimal,
-    /// Valore fiscale riconosciuto alla partecipazione; loss
+    /// Valore fiscale riconosciuto alla partecipazione; total loss
     pub rt2_col3: Decimal,
-    /// Plusvalenza (RT1 - RT2); only if < 0
+    /// Minusvalenza (RT1 - RT2); only if < 0
     pub rt3_col1: Option<Decimal>,
     /// Plusvalenza (RT1 - RT2); only if > 0
     pub rt3_col2: Option<Decimal>,
@@ -35,7 +35,7 @@ pub struct Sezione2 {
     pub rt21: Decimal,
     /// Valore fiscale riconosciuto alla partecipazione; loss
     pub rt22_col3: Decimal,
-    /// Plusvalenza (RT21 - RT22); only if < 0
+    /// Minusvalenza (RT21 - RT22); only if < 0
     pub rt23_col1: Option<Decimal>,
     /// Plusvalenza (RT21 - RT22); only if > 0
     pub rt23_col2: Option<Decimal>,
@@ -77,7 +77,11 @@ impl Sezione1 {
             .map(|x| x.value().abs())
             .sum::<Decimal>()
             .round_dp(2);
-        let diff: Decimal = total_sold - loss;
+        let diff = gains_and_losses_12_percent
+            .iter()
+            .map(|x| x.value())
+            .sum::<Decimal>()
+            .round_dp(2);
         let rt3 = if diff.is_sign_negative() {
             (Some(diff.abs()), None)
         } else {
@@ -105,7 +109,11 @@ impl Sezione2 {
             .map(|x| x.value().abs())
             .sum::<Decimal>()
             .round_dp(2);
-        let diff: Decimal = total_sold - loss;
+        let diff = gains_and_losses_26_percent
+            .iter()
+            .map(|x| x.value())
+            .sum::<Decimal>()
+            .round_dp(2);
         let rt23 = if diff.is_sign_negative() {
             (Some(diff.abs()), None)
         } else {
@@ -135,12 +143,12 @@ mod test {
         assert_eq!(quadro_rt.sezione_1.rt1, dec!(680.0));
         assert_eq!(quadro_rt.sezione_1.rt2_col3, dec!(80.0));
         assert_eq!(quadro_rt.sezione_1.rt3_col1, None);
-        assert_eq!(quadro_rt.sezione_1.rt3_col2, Some(dec!(600.0)));
+        assert_eq!(quadro_rt.sezione_1.rt3_col2, Some(dec!(520.0)));
 
         assert_eq!(quadro_rt.sezione_2.rt21, dec!(632.0));
         assert_eq!(quadro_rt.sezione_2.rt22_col3, dec!(32.0));
         assert_eq!(quadro_rt.sezione_2.rt23_col1, None);
-        assert_eq!(quadro_rt.sezione_2.rt23_col2, Some(dec!(600.0)));
+        assert_eq!(quadro_rt.sezione_2.rt23_col2, Some(dec!(568.0)));
     }
 
     fn gains_and_losses() -> GainsAndLosses {
